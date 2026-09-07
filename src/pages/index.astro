@@ -1,0 +1,235 @@
+---
+import Layout from "../layouts/Layout.astro";
+import AssetShelf from "../components/AssetShelf.astro";
+import PortfolioPanel from "../components/PortfolioPanel.astro";
+import { profile, projects, researchNotes, skillGroups } from "../data/portfolio";
+
+const baseUrl = import.meta.env.BASE_URL;
+---
+
+<Layout
+  title={`${profile.name} / cat room portfolio`}
+  description={`${profile.name}'s pixel-room portfolio for cloud security, Web3 security, Android security, and program analysis.`}
+>
+  <a class="skip-link" href="#content">Skip to portfolio content</a>
+  <div class="site-shell" data-base-path={baseUrl}>
+    <header class="site-header" data-header>
+      <a class="wordmark" href="#home">
+        <span class="wordmark__cat" aria-hidden="true">⌁</span>
+        <span>IMANO177</span>
+        <small>cat room / portfolio</small>
+      </a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a href="#about">about</a>
+        <a href="#projects">projects</a>
+        <a href="#research">research</a>
+        <a href="#contact">contact</a>
+      </nav>
+      <div class="header-tools">
+        <span class="time-chip" data-time-label>local time / --:--</span>
+        <button class="small-button" type="button" data-motion-toggle aria-pressed="false">motion on</button>
+      </div>
+    </header>
+
+    <main id="content">
+      <section class="hero" id="home" aria-labelledby="hero-title">
+        <div class="hero__copy">
+          <p class="hero__route"><span>ROOM 01</span> / PERSONAL STUDIO / OPEN SKY</p>
+          <h1 id="hero-title">A small room for <em>serious systems.</em></h1>
+          <p class="hero__lead">{profile.summary} The room is alive; the portfolio stays readable.</p>
+          <div class="hero__actions">
+            <a class="button button--primary" href="#projects">walk to projects <span aria-hidden="true">→</span></a>
+            <button class="button button--secondary" type="button" data-panel-open="cv">open CV / profile</button>
+            <a class="button button--text" href={`mailto:${profile.email}`}>send a signal <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="hero__facts" aria-label="Profile facts">
+            <span><b>focus</b> {profile.role}</span>
+            <span><b>habitat</b> {profile.habitat}</span>
+            <span><b>editor</b> {profile.editor}</span>
+          </div>
+        </div>
+
+        <div class="room-stage" aria-label="Interactive cat room simulation">
+          <div class="room-stage__head">
+            <span><i class="status-dot" aria-hidden="true"></i> live room / fixed camera</span>
+            <span data-weather-label>sky / reading local time</span>
+          </div>
+          <div class="cat-room" id="cat-room" data-cat-room-root role="region" aria-label="A pixel-art room with a glass wall, sky, covered balcony, plants, furniture, and cats.">
+            <div class="room-fallback" data-room-fallback aria-hidden="true">
+              <div class="room-fallback__sky" style={`--fallback-sky: url("${baseUrl}assets/sky/sky-01-orig-big.png")`}></div>
+              <div class="room-fallback__glass"></div>
+              <div class="room-fallback__balcony"><span></span><span></span><span></span><span></span></div>
+              <div class="room-fallback__roof"></div>
+              <div class="room-fallback__floor"></div>
+              <div class="room-fallback__desk"><span class="room-fallback__screen"></span><span class="room-fallback__lamp"></span></div>
+              <div class="room-fallback__sofa"></div>
+              <div class="room-fallback__plant room-fallback__plant--one"></div>
+              <div class="room-fallback__plant room-fallback__plant--two"></div>
+              <div class="room-fallback__cats">
+                <span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+            <div class="room-hotspots" aria-label="Room shortcuts">
+              <button class="hotspot hotspot--desk" type="button" data-hotspot="projects"><span>desk</span><b>projects</b></button>
+              <button class="hotspot hotspot--shelf" type="button" data-hotspot="research"><span>shelf</span><b>research</b></button>
+              <button class="hotspot hotspot--window" type="button" data-hotspot="about"><span>window</span><b>about</b></button>
+              <button class="hotspot hotspot--board" type="button" data-hotspot="cv"><span>board</span><b>CV / profile</b></button>
+              <button class="hotspot hotspot--terminal" type="button" data-hotspot="github"><span>terminal</span><b>GitHub</b></button>
+            </div>
+            <div class="room-overlay" data-room-overlay>
+              <span>phaser room layer</span>
+              <strong data-room-status>loading room...</strong>
+            </div>
+          </div>
+          <div class="room-stage__foot">
+            <span data-room-time>--:-- / --</span>
+            <span data-room-cats>6 cats / initializing</span>
+            <span>click a cat to pet · use the controls to feed or play</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="room-controls" aria-label="Cat room controls">
+        <div class="room-controls__intro">
+          <span class="micro-label">room controls</span>
+          <strong data-selected-cat>Select a cat in the room</strong>
+        </div>
+        <div class="room-controls__actions">
+          <button class="control-button" type="button" data-cat-action="pet" disabled>pet</button>
+          <button class="control-button" type="button" data-cat-action="feed" disabled>feed</button>
+          <button class="control-button" type="button" data-cat-action="play" disabled>play</button>
+          <button class="control-button" type="button" data-cat-action="call" disabled>call</button>
+        </div>
+        <p class="room-controls__status" role="status" aria-live="polite" data-interaction-status>Nothing needs your attention yet.</p>
+      </section>
+
+      <section class="about-section page-section" id="about" aria-labelledby="about-title">
+        <div class="section-label">01 / about the room</div>
+        <div class="about-section__grid">
+          <div>
+            <h2 id="about-title">The simulation is the welcome mat. The work is the house.</h2>
+            <p>{profile.summary} I like systems that stay inspectable: tools with a clear path, security work with a useful trace, and interfaces that leave enough room for curiosity.</p>
+            <p class="muted-copy">The cats are optional company. Every important detail is available below as normal HTML, even when the room is paused or unavailable.</p>
+          </div>
+          <dl class="fact-list">
+            <div><dt>main interests</dt><dd>{profile.interests.join(" · ")}</dd></div>
+            <div><dt>syntax</dt><dd>{profile.languages.join(" · ")}</dd></div>
+            <div><dt>markup</dt><dd>{profile.markup.join(" · ")}</dd></div>
+            <div><dt>habitat</dt><dd>{profile.habitat}</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="projects-section page-section" id="projects" aria-labelledby="projects-title">
+        <div class="section-heading">
+          <div>
+            <div class="section-label">02 / desk zone</div>
+            <h2 id="projects-title">Projects you can inspect.</h2>
+          </div>
+          <a class="section-link" href={profile.github} target="_blank" rel="noreferrer">all repositories ↗</a>
+        </div>
+        <div class="project-grid grid gap-6 md:grid-cols-3">
+          {projects.map((project, index) => (
+            <article class={`project-card project-card--${index + 1}`}>
+              <div class="project-card__top"><span>0{index + 1}</span><span>{project.type}</span></div>
+              <h3>{project.title}</h3>
+              <p>{project.description}</p>
+              <ul class="tag-row" aria-label={`${project.title} technologies`}>
+                {project.tags.map((tag) => <li>{tag}</li>)}
+              </ul>
+              <a class="project-card__link" href={project.href} target="_blank" rel="noreferrer">open source <span aria-hidden="true">↗</span></a>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="research-section page-section" id="research" aria-labelledby="research-title">
+        <div class="section-heading">
+          <div>
+            <div class="section-label">03 / bookshelf zone</div>
+            <h2 id="research-title">Notes from the quiet hours.</h2>
+          </div>
+          <span class="section-count">3 threads / public</span>
+        </div>
+        <div class="research-list">
+          {researchNotes.map((note) => (
+            <article class="research-note">
+              <span class="research-note__index">{note.label}</span>
+              <h3>{note.title}</h3>
+              <p>{note.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="profile-section page-section" id="cv" aria-labelledby="profile-title">
+        <div class="section-label">04 / notice board</div>
+        <div class="profile-section__grid">
+          <div>
+            <h2 id="profile-title">CV / profile, without the maze.</h2>
+            <p>For a complete CV or education history, send an email and I will share the current version. The public profile keeps the confirmed technical surface here.</p>
+            <a class="button button--primary" href={`mailto:${profile.email}?subject=CV%20request`}>request CV <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="skill-board">
+            {skillGroups.map((group) => (
+              <div class="skill-board__row"><span>{group.label}</span><strong>{group.values.join(" / ")}</strong></div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section class="contact-section page-section" id="contact" aria-labelledby="contact-title">
+        <div>
+          <div class="section-label">05 / window ledge</div>
+          <h2 id="contact-title">Open a channel.</h2>
+          <p>Direct routes, no hidden quest required.</p>
+        </div>
+        <div class="contact-links">
+          <a href={`mailto:${profile.email}`}><span>email</span><strong>{profile.email}</strong><b>↗</b></a>
+          <a href={`https://discord.com/users/${profile.discord}`} target="_blank" rel="noreferrer"><span>discord</span><strong>{profile.discord}</strong><b>↗</b></a>
+          <a href={profile.github} target="_blank" rel="noreferrer"><span>github</span><strong>github.com/ImAno177</strong><b>↗</b></a>
+          <a href={profile.portfolio} target="_blank" rel="noreferrer"><span>portfolio</span><strong>imano177.github.io/portfolio</strong><b>↗</b></a>
+        </div>
+      </section>
+
+      <AssetShelf baseUrl={baseUrl} />
+    </main>
+
+    <footer class="site-footer">
+      <span>IMANO177 / CAT ROOM PORTFOLIO</span>
+      <span>static by design · living by local time</span>
+      <a href="#home">back to window ↑</a>
+    </footer>
+  </div>
+
+  <PortfolioPanel id="about" title="About the room" kicker="window / about">
+    <p>{profile.summary}</p>
+    <p>The room is a small interface experiment around a normal portfolio. Pause it, ignore it, or use the objects as shortcuts; the work remains yours to browse.</p>
+  </PortfolioPanel>
+  <PortfolioPanel id="projects" title="Projects" kicker="desk / projects">
+    {projects.map((project) => <p><a href={project.href} target="_blank" rel="noreferrer"><strong>{project.title}</strong></a> — {project.description}</p>)}
+  </PortfolioPanel>
+  <PortfolioPanel id="research" title="Research / notes" kicker="shelf / research">
+    {researchNotes.map((note) => <p><strong>{note.title}.</strong> {note.text}</p>)}
+  </PortfolioPanel>
+  <PortfolioPanel id="cv" title="CV / profile" kicker="board / profile">
+    <p>The public profile currently confirms {profile.role}, {profile.habitat}, and the technical groups listed on the notice board.</p>
+    <a class="button button--primary" href={`mailto:${profile.email}?subject=CV%20request`}>request the current CV ↗</a>
+  </PortfolioPanel>
+  <PortfolioPanel id="contact" title="Contact" kicker="window / contact">
+    <p><a href={`mailto:${profile.email}`}>{profile.email}</a></p>
+    <p><a href={`https://discord.com/users/${profile.discord}`} target="_blank" rel="noreferrer">Discord / {profile.discord}</a></p>
+  </PortfolioPanel>
+  <PortfolioPanel id="github" title="GitHub" kicker="terminal / github">
+    <p>The repository trail lives at <a href={profile.github} target="_blank" rel="noreferrer">github.com/ImAno177 ↗</a>.</p>
+  </PortfolioPanel>
+
+  <noscript>
+    <div class="noscript-banner">JavaScript is off. The room is paused, but the portfolio content above remains available.</div>
+  </noscript>
+
+  <script>
+    import { setupPortfolioUI } from "../client/portfolio-ui";
+    setupPortfolioUI();
+  </script>
+</Layout>

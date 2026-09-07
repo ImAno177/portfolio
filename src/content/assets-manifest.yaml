@@ -1,0 +1,57 @@
+version: 1
+project: imano177-cat-room-portfolio
+policy: "Existing assets were audited first. Marketplace assets are never fetched at runtime."
+packs:
+  - id: sky-background-pack
+    source: https://craftpix.net/freebies/
+    author: CraftPix
+    license: https://craftpix.net/file-licenses/
+    commercial_use: true
+    modification_allowed: true
+    redistribution_allowed: false
+    attribution_required: false
+    local_path: public/assets/sky/
+    used_for:
+      - visitor-local sky states
+      - asset shelf references
+    notes: "Freebie license permits use inside a game or website project; source art is not redistributed as a standalone pack."
+  - id: cat-sprite-pack
+    source: local user-supplied archive; original source not included
+    author: unknown
+    license: "unverified user-supplied asset"
+    commercial_use: unknown
+    modification_allowed: unknown
+    redistribution_allowed: unknown
+    attribution_required: unknown
+    local_path: public/assets/cats/
+    used_for:
+      - six simulated cats
+      - asset shelf references
+    notes: "Keep provenance status visible until the original creator/license is confirmed."
+  - id: top-down-interior-pack
+    source: local user-supplied archive; original source not included
+    author: unknown
+    license: "unverified user-supplied asset"
+    commercial_use: unknown
+    modification_allowed: unknown
+    redistribution_allowed: unknown
+    attribution_required: unknown
+    local_path: public/assets/interior/
+    used_for:
+      - room atlas reference shelf
+      - palette and prop direction
+    notes: "Used as supplied visual material; confirm provenance before commercial redistribution."
+reference_assets:
+  - path: public/assets/reference/cat-frame-indexes.png
+    source: "assets/Free pack/Free pack/Frame indexes.png"
+    used_for: "sprite-frame reference shelf"
+  - path: public/assets/reference/craftpix-coupon.png
+    source: "assets/New free backgrounds part1/COUPON.png"
+    used_for: "source/license reference shelf"
+source_only_inventory:
+  - "assets/Free pack/Free pack/*.aseprite"
+  - "assets/Free pack/Free pack/palette.gpl"
+  - "assets/New free backgrounds part1/COUPON.pdf"
+  - "assets/New free backgrounds part1/PSD/*.psd"
+  - "assets/New free backgrounds part1/license.txt"
+  - "assets/New free backgrounds part1/Free Assets Craftpix!.url"

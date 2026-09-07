@@ -1,0 +1,35 @@
+---
+import { ASSET_ENTRIES } from "../data/assets";
+
+interface Props {
+  baseUrl: string;
+}
+
+const { baseUrl } = Astro.props;
+const assetUrl = (path: string) => `${baseUrl}${path.replace(/^\//, "")}`;
+---
+
+<details class="asset-shelf" id="assets">
+  <summary>
+    <span>asset shelf</span>
+    <strong>{ASSET_ENTRIES.length} supplied raster references</strong>
+    <span aria-hidden="true">+</span>
+  </summary>
+  <div class="asset-shelf__intro">
+    <p>Existing repository assets are the first source of truth. This shelf keeps the supplied pixel material visible and traceable instead of hiding it behind the simulation.</p>
+    <a href="https://github.com/ImAno177/portfolio/blob/main/docs/asset-licenses/README.md" target="_blank" rel="noreferrer">provenance notes ↗</a>
+  </div>
+  <div class="asset-shelf__grid">
+    {ASSET_ENTRIES.map((asset) => (
+      <figure class="asset-chip">
+        <div class="asset-chip__frame">
+          <img src={assetUrl(asset.path)} alt={asset.label} width="160" height="110" decoding="async" />
+        </div>
+        <figcaption>
+          <strong>{asset.label}</strong>
+          <span>{asset.kind}</span>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</details>

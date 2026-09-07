@@ -1,0 +1,22 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  kicker: string;
+}
+
+const { id, title, kicker } = Astro.props;
+---
+
+<dialog class="info-dialog" id={`panel-${id}`} data-info-panel aria-labelledby={`panel-${id}-title`}>
+  <div class="info-dialog__head">
+    <div>
+      <span class="micro-label">{kicker}</span>
+      <h2 id={`panel-${id}-title`}>{title}</h2>
+    </div>
+    <button class="icon-button" type="button" data-panel-close aria-label={`Close ${title}`}>×</button>
+  </div>
+  <div class="info-dialog__body">
+    <slot />
+  </div>
+</dialog>
