@@ -2,11 +2,21 @@ const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 const clock = document.querySelector("#clock");
 const palette = document.querySelector("#command-palette");
 const commandInput = document.querySelector("#command-input");
+const commandItems = [...document.querySelectorAll("[data-command-item]")];
+const commandStatus = document.querySelector("#command-status");
 const sceneShell = document.querySelector("[data-scene]");
 const sceneMessage = document.querySelector("#scene-message");
 const sceneRuntime = document.querySelector("#scene-runtime");
+const railRuntime = document.querySelector("#rail-runtime");
 const motionStatus = document.querySelector("#motion-status");
 const sceneCoordinate = document.querySelector("#scene-coordinate");
+const projectPanels = [...document.querySelectorAll(".project-panel")];
+const filterButtons = [...document.querySelectorAll("[data-filter]")];
+const sectionCount = document.querySelector(".section-count");
+
+let motionApi = null;
+let sceneApi = null;
+let pulseMessageTimer = 0;
 
 function updateClock() {
   if (!clock) return;
@@ -22,6 +32,10 @@ function updateClock() {
 updateClock();
 window.setInterval(updateClock, 60_000);
 
+function setSceneMessage(message) {
+  if (sceneMessage) sceneMessage.textContent = message;
+}
+
 function openPalette() {
   if (!palette || typeof palette.showModal !== "function") return;
   palette.showModal();
@@ -32,43 +46,125 @@ document.querySelectorAll("[data-open-palette]").forEach((trigger) => {
   trigger.addEventListener("click", openPalette);
 });
 
-document.addEventListener("keydown", (event) => {
-  const target = event.target;
-  const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
+function isTypingTarget(target) {
+  return target instanceof HTMLInputElement
+    || target instanceof HTMLTextAreaElement
+    || target?.isContentEditable;
+}
 
-  if (event.key === "/" && !isTyping && !palette?.open) {
+document.addEventListener("keydown", (event) => {
+  if (event.key === "/" && !isTypingTarget(event.target) && !palette?.open) {
     event.preventDefault();
     openPalette();
   }
 
-  if (event.key.toLowerCase() === "p" && !isTyping && !palette?.open) {
+  if (event.key.toLowerCase() === "p" && !isTypingTarget(event.target) && !palette?.open) {
     event.preventDefault();
     pulseScene();
   }
 });
 
-document.querySelectorAll("[data-jump]").forEach((jump) => {
-  jump.addEventListener("click", () => {
-    const destination = document.querySelector(jump.dataset.jump);
-    if (!destination) return;
-
+commandItems.forEach((item) => {
+  item.addEventListener("click", () => {
     palette?.close();
-    destination.scrollIntoView({
-      behavior: reduceMotionQuery.matches ? "auto" : "smooth",
-      block: "start",
-    });
-    destination.focus({ preventScroll: true });
+    const destination = item.getAttribute("href");
+    if (!destination?.startsWith("#")) return;
+    window.setTimeout(() => {
+      document.querySelector(destination)?.focus({ preventScroll: true });
+    }, 0);
   });
 });
 
-const filterButtons = [...document.querySelectorAll("[data-filter]")];
-const projectRows = [...document.querySelectorAll("[data-category]")];
+if (commandInput) {
+  commandInput.addEventListener("input", () => {
+    const query = commandInput.value.trim().toLowerCase();
+    let matches = 0;
+
+    commandItems.forEach((item) => {
+      const isMatch = query === "" || item.textContent.toLowerCase().includes(query);
+      item.hidden = !isMatch;
+      if (isMatch) matches += 1;
+    });
+
+    if (commandStatus) {
+      commandStatus.textContent = query
+        ? `${matches} route${matches === 1 ? "" : "s"} match / esc to close`
+        : "/ to open · esc to close";
+    }
+  });
+
+  palette?.addEventListener("close", () => {
+    commandInput.value = "";
+    commandItems.forEach((item) => { item.hidden = false; });
+    if (commandStatus) commandStatus.textContent = "/ to open · esc to close";
+  });
+}
+
+function moveProjectFocus(current, direction) {
+  const visiblePanels = projectPanels.filter((panel) => !panel.hidden);
+  const currentIndex = visiblePanels.indexOf(current.closest(".project-panel"));
+  if (currentIndex < 0) return;
+  const nextIndex = (currentIndex + direction + visiblePanels.length) % visiblePanels.length;
+  visiblePanels[nextIndex].querySelector("[data-project-trigger]")?.focus();
+}
+
+function setProjectOpen(panel, shouldOpen, shouldAnimate = true) {
+  const body = panel.querySelector(".project-body");
+  const trigger = panel.querySelector("[data-project-trigger]");
+  if (!body || !trigger) return;
+
+  panel.classList.toggle("is-open", shouldOpen);
+  trigger.setAttribute("aria-expanded", String(shouldOpen));
+  body.hidden = !shouldOpen;
+
+  if (shouldOpen && shouldAnimate && motionApi?.animate && !reduceMotionQuery.matches) {
+    motionApi.animate(body, {
+      opacity: [0.45, 1],
+      translateX: [16, 0],
+      duration: 420,
+      ease: "outExpo",
+    });
+  }
+}
+
+function toggleProject(panel) {
+  const shouldOpen = !panel.classList.contains("is-open");
+  projectPanels.forEach((candidate) => setProjectOpen(candidate, candidate === panel && shouldOpen));
+}
+
+projectPanels.forEach((panel) => {
+  const trigger = panel.querySelector("[data-project-trigger]");
+  if (!trigger) return;
+
+  trigger.addEventListener("click", () => toggleProject(panel));
+  trigger.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      moveProjectFocus(trigger, 1);
+    }
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      moveProjectFocus(trigger, -1);
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      projectPanels.find((candidate) => !candidate.hidden)?.querySelector("[data-project-trigger]")?.focus();
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      [...projectPanels].reverse().find((candidate) => !candidate.hidden)?.querySelector("[data-project-trigger]")?.focus();
+    }
+  });
+});
 
 function applyFilter(filter) {
-  projectRows.forEach((row) => {
-    const isVisible = filter === "all" || row.dataset.category === filter;
-    row.hidden = !isVisible;
-    row.setAttribute("aria-hidden", String(!isVisible));
+  const visiblePanels = [];
+
+  projectPanels.forEach((panel) => {
+    const isVisible = filter === "all" || panel.dataset.category === filter;
+    panel.hidden = !isVisible;
+    panel.setAttribute("aria-hidden", String(!isVisible));
+    if (isVisible) visiblePanels.push(panel);
   });
 
   filterButtons.forEach((button) => {
@@ -77,12 +173,20 @@ function applyFilter(filter) {
     button.setAttribute("aria-pressed", String(isActive));
   });
 
+  const openPanel = visiblePanels.find((panel) => panel.classList.contains("is-open"));
+  const nextOpen = openPanel || visiblePanels[0];
+  projectPanels.forEach((panel) => setProjectOpen(panel, panel === nextOpen, false));
+
+  if (sectionCount) {
+    sectionCount.textContent = `${visiblePanels.length.toString().padStart(2, "0")} ${visiblePanels.length === 1 ? "verified trail" : "verified trails"}`;
+  }
+
   if (motionApi?.animate && !reduceMotionQuery.matches) {
-    motionApi.animate(projectRows.filter((row) => !row.hidden), {
+    motionApi.animate(visiblePanels, {
       opacity: [0.55, 1],
-      translateX: [-8, 0],
-      duration: 260,
-      delay: motionApi.stagger(35),
+      translateY: [10, 0],
+      duration: 360,
+      delay: motionApi.stagger(45),
       ease: "outExpo",
     });
   }
@@ -92,44 +196,11 @@ filterButtons.forEach((button) => {
   button.addEventListener("click", () => applyFilter(button.dataset.filter));
 });
 
-if (commandInput) {
-  const paletteChoices = [...document.querySelectorAll("[data-jump]")];
-  commandInput.addEventListener("input", () => {
-    const query = commandInput.value.trim().toLowerCase();
-    paletteChoices.forEach((choice) => {
-      choice.hidden = query !== "" && !choice.textContent.toLowerCase().includes(query);
-    });
-  });
-
-  palette?.addEventListener("close", () => {
-    commandInput.value = "";
-    paletteChoices.forEach((choice) => {
-      choice.hidden = false;
-    });
-  });
-}
-
-let motionApi = null;
-const motionReady = import("https://cdn.jsdelivr.net/npm/animejs/+esm")
-  .then((module) => {
-    motionApi = module;
-    if (motionStatus) motionStatus.textContent = reduceMotionQuery.matches ? "anime.js / reduced" : "anime.js / ready";
-    return module;
-  })
-  .catch(() => {
-    if (motionStatus) motionStatus.textContent = "anime.js / fallback";
-    return null;
-  });
-
-function setSceneMessage(message) {
-  if (sceneMessage) sceneMessage.textContent = message;
-}
-
 function animatePulseUi() {
-  if (!motionApi?.animate) return;
+  if (!motionApi?.animate || reduceMotionQuery.matches) return;
 
   motionApi.animate(".scene-pulse", {
-    scale: [0.35, 1.3],
+    scale: [0.3, 1.3],
     opacity: [0.82, 0],
     duration: 820,
     ease: "outExpo",
@@ -149,79 +220,75 @@ function pulseScene() {
   pulseMessageTimer = window.setTimeout(() => setSceneMessage("move through the field"), 1500);
 }
 
-let pulseMessageTimer = 0;
-let sceneApi = null;
-
 document.querySelectorAll("[data-pulse-scene]").forEach((trigger) => {
   trigger.addEventListener("click", pulseScene);
 });
 
 function runEntrance() {
-  motionReady.then((module) => {
-    if (!module || reduceMotionQuery.matches) return;
+  if (!motionApi?.animate || reduceMotionQuery.matches) return;
 
-    const { animate, stagger } = module;
-    animate(".system-bar", {
-      opacity: [0, 1],
-      translateY: [-10, 0],
-      duration: 500,
-      ease: "outExpo",
-    });
-    animate(".hero-name", {
-      opacity: [0, 1],
-      translateY: [26, 0],
-      duration: 760,
-      ease: "outExpo",
-    });
-    animate(".hero-verb", {
-      opacity: [0, 1],
-      translateY: [20, 0],
-      duration: 620,
-      delay: 110,
-      ease: "outExpo",
-    });
-    animate(".hero-role, .hero-description, .hero-actions, .hero-notes", {
-      opacity: [0, 1],
-      translateY: [16, 0],
-      duration: 560,
-      delay: stagger(70, { start: 220 }),
-      ease: "outExpo",
-    });
-    animate(".hero-stage", {
-      opacity: [0, 1],
-      translateX: [24, 0],
-      duration: 900,
-      delay: 120,
-      ease: "outExpo",
-    });
-    animate(".project-feature", {
-      opacity: [0, 1],
-      translateY: [20, 0],
-      duration: 650,
-      delay: 320,
-      ease: "outExpo",
-    });
-
-    if ("IntersectionObserver" in window) {
-      const observer = new IntersectionObserver((entries, currentObserver) => {
-        const targets = entries.filter((entry) => entry.isIntersecting).map((entry) => {
-          currentObserver.unobserve(entry.target);
-          return entry.target;
-        });
-        if (!targets.length) return;
-
-        animate(targets, {
-          opacity: [0, 1],
-          translateY: [18, 0],
-          duration: 520,
-          delay: stagger(55),
-          ease: "outExpo",
-        });
-      }, { threshold: 0.12 });
-
-      document.querySelectorAll(".project-row, .info-panel, .contact-section").forEach((element) => observer.observe(element));
-    }
+  const { animate, stagger } = motionApi;
+  animate(".hero-copy", {
+    opacity: [0, 1],
+    translateY: [24, 0],
+    duration: 720,
+    ease: "outExpo",
   });
+  animate(".hero-stage", {
+    opacity: [0, 1],
+    translateX: [28, 0],
+    duration: 900,
+    delay: 120,
+    ease: "outExpo",
+  });
+  animate(".status-cell", {
+    opacity: [0, 1],
+    translateY: [12, 0],
+    duration: 500,
+    delay: stagger(55, { start: 260 }),
+    ease: "outExpo",
+  });
+
+  if (!("IntersectionObserver" in window)) return;
+
+  const observer = new IntersectionObserver((entries, currentObserver) => {
+    const targets = entries
+      .filter((entry) => entry.isIntersecting)
+      .map((entry) => {
+        currentObserver.unobserve(entry.target);
+        return entry.target;
+      });
+    if (!targets.length) return;
+
+    animate(targets, {
+      opacity: [0, 1],
+      translateY: [18, 0],
+      duration: 560,
+      delay: stagger(60),
+      ease: "outExpo",
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll(".work-section, .stack-section, .contact-section").forEach((section) => observer.observe(section));
+}
+
+const motionReady = import("https://cdn.jsdelivr.net/npm/animejs@4.0.2/+esm")
+  .then((module) => {
+    motionApi = module;
+    if (motionStatus) {
+      motionStatus.textContent = reduceMotionQuery.matches ? "anime.js / reduced" : "anime.js / ready";
+    }
+    runEntrance();
+    return module;
+  })
+  .catch(() => {
+    if (motionStatus) motionStatus.textContent = "anime.js / fallback";
+    return null;
+  });
+
+function setRuntimeStatus(value) {
+  if (sceneRuntime) sceneRuntime.textContent = value;
+  if (railRuntime) railRuntime.textContent = value;
 }
 
 function initSignalScene() {
@@ -246,6 +313,8 @@ function initSignalScene() {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
       renderer.setClearColor(0x000000, 0);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.1;
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
@@ -298,7 +367,7 @@ function initSignalScene() {
         new THREE.MeshBasicMaterial({ color: 0xd8ff4a }),
       ));
 
-      const particleCount = 720;
+      const particleCount = 480;
       const particlePositions = new Float32Array(particleCount * 3);
       for (let index = 0; index < particleCount; index += 1) {
         const angle = index * 12.9898;
@@ -330,9 +399,8 @@ function initSignalScene() {
 
       const pointer = { x: 0, y: 0 };
       const pointerTarget = { x: 0, y: 0 };
-      let visible = true;
       let frameId = 0;
-      let previousTime = 0;
+      let visible = true;
       let pulseStarted = -Infinity;
 
       function resize() {
@@ -359,74 +427,92 @@ function initSignalScene() {
         if (sceneCoordinate) sceneCoordinate.textContent = "0.00 : 0.00";
       }
 
-      sceneShell.addEventListener("pointermove", (event) => updatePointer(event.clientX, event.clientY), { passive: true });
-      sceneShell.addEventListener("pointerleave", resetPointer, { passive: true });
-      canvas.addEventListener("touchstart", (event) => {
+      sceneShell.addEventListener("pointermove", (event) => updatePointer(event.clientX, event.clientY));
+      sceneShell.addEventListener("pointerleave", resetPointer);
+      sceneShell.addEventListener("touchmove", (event) => {
         const touch = event.touches[0];
         if (touch) updatePointer(touch.clientX, touch.clientY);
       }, { passive: true });
-      canvas.addEventListener("touchmove", (event) => {
-        const touch = event.touches[0];
-        if (touch) updatePointer(touch.clientX, touch.clientY);
-      }, { passive: true });
-      window.addEventListener("resize", resize, { passive: true });
 
       function render(time) {
         frameId = 0;
-        if (!visible) return;
+        if (!visible || document.hidden) return;
 
-        const delta = Math.min(time - previousTime, 50);
-        previousTime = time;
-        if (!reduceMotionQuery.matches) {
-          pointer.x += (pointerTarget.x - pointer.x) * 0.045;
-          pointer.y += (pointerTarget.y - pointer.y) * 0.045;
-          coreGroup.rotation.y += delta * 0.00028;
-          coreGroup.rotation.x += (pointer.y * 0.18 - coreGroup.rotation.x) * 0.035;
-          coreGroup.rotation.z += delta * 0.00005;
-          particles.rotation.y -= delta * 0.000035;
-          particles.rotation.x = pointer.y * 0.04;
+        const elapsed = time * 0.001;
+        pointer.x += (pointerTarget.x - pointer.x) * 0.035;
+        pointer.y += (pointerTarget.y - pointer.y) * 0.035;
+        coreGroup.rotation.y = elapsed * 0.16 + pointer.x * 0.34;
+        coreGroup.rotation.x = Math.sin(elapsed * 0.22) * 0.09 + pointer.y * 0.2;
+        particles.rotation.y = elapsed * 0.025;
+        particles.rotation.x = pointer.y * 0.04;
 
-          const pulseProgress = Math.min(1, Math.max(0, (time - pulseStarted) / 900));
-          const pulseEnvelope = pulseProgress < 1 ? Math.sin(pulseProgress * Math.PI) : 0;
-          coreGroup.scale.setScalar(1 + pulseEnvelope * 0.11);
-          particleMaterial.opacity = 0.6 + pulseEnvelope * 0.25;
+        if (Number.isFinite(pulseStarted)) {
+          const pulseAge = performance.now() - pulseStarted;
+          coreGroup.scale.setScalar(1 + Math.max(0, 1 - pulseAge / 720) * 0.12);
+          if (pulseAge > 720) {
+            pulseStarted = -Infinity;
+            coreGroup.scale.setScalar(1);
+          }
         }
 
         renderer.render(scene, camera);
-        if (!reduceMotionQuery.matches) frameId = window.requestAnimationFrame(render);
+        frameId = window.requestAnimationFrame(render);
+      }
+
+      function startRender() {
+        if (reduceMotionQuery.matches) {
+          resize();
+          return;
+        }
+        if (!frameId) frameId = window.requestAnimationFrame(render);
       }
 
       sceneApi = {
         pulse() {
-          pulseStarted = performance.now();
           if (reduceMotionQuery.matches) {
             renderer.render(scene, camera);
-          } else if (!frameId) {
-            frameId = window.requestAnimationFrame(render);
+            return;
           }
+          pulseStarted = performance.now();
+          startRender();
         },
       };
 
-      const visibilityObserver = "IntersectionObserver" in window ? new IntersectionObserver(([entry]) => {
-        visible = entry.isIntersecting;
-        if (visible && !reduceMotionQuery.matches && !frameId) frameId = window.requestAnimationFrame(render);
-      }, { threshold: 0.05 }) : null;
+      const visibilityObserver = "IntersectionObserver" in window
+        ? new IntersectionObserver(([entry]) => {
+          visible = entry.isIntersecting;
+          if (visible) startRender();
+        }, { threshold: 0.04 })
+        : null;
       visibilityObserver?.observe(sceneShell);
 
-      sceneShell.dataset.webgl = "live";
-      if (sceneRuntime) sceneRuntime.textContent = "three.js / live";
+      const resizeObserver = "ResizeObserver" in window ? new ResizeObserver(resize) : null;
+      resizeObserver?.observe(sceneShell);
+      window.addEventListener("resize", resize, { passive: true });
+
+      sceneShell.classList.add("is-live");
+      setRuntimeStatus("three.js / live");
       setSceneMessage("move through the field");
       resize();
-      if (reduceMotionQuery.matches) renderer.render(scene, camera);
-      else frameId = window.requestAnimationFrame(render);
-    } catch {
-      canvas.hidden = true;
-      sceneShell.dataset.webgl = "fallback";
-      if (sceneRuntime) sceneRuntime.textContent = "three.js / fallback";
-      setSceneMessage("fallback field / no WebGL required");
+      startRender();
+
+      window.addEventListener("pagehide", () => {
+        visibilityObserver?.disconnect();
+        resizeObserver?.disconnect();
+        window.cancelAnimationFrame(frameId);
+        scene.traverse((object) => {
+          if (!object.isMesh && !object.isLineSegments && !object.isPoints) return;
+          object.geometry?.dispose?.();
+          if (Array.isArray(object.material)) object.material.forEach((material) => material.dispose?.());
+          else object.material?.dispose?.();
+        });
+        renderer.dispose();
+      }, { once: true });
+    } catch (error) {
+      setRuntimeStatus("three.js / fallback");
+      setSceneMessage("CSS core / runtime fallback");
     }
   })();
 }
 
-runEntrance();
-initSignalScene();
+Promise.allSettled([motionReady, initSignalScene()]);
