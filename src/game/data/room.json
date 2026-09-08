@@ -1,0 +1,225 @@
+{
+  "width": 640,
+  "height": 360,
+  "scale": 2,
+  "skyRect": [64, -40, 544, 306],
+  "skyWindows": [
+    [64, 16, 304, 128],
+    [400, 32, 208, 112]
+  ],
+  "tiles": [
+    { "frame": "wall", "x": 0, "y": 0, "cols": 20, "rows": 5, "depth": 1 },
+    { "frame": "floor", "x": 0, "y": 160, "cols": 20, "rows": 6, "depth": 2 },
+    { "frame": "floor", "x": 400, "y": 128, "cols": 7, "rows": 2, "depth": 2 },
+    { "frame": "beam", "x": 0, "y": 0, "cols": 20, "rows": 1, "depth": 3 },
+    { "frame": "beam", "x": 0, "y": 352, "cols": 20, "rows": 1, "depth": 900 },
+    {
+      "frame": "rug-fill",
+      "x": 256,
+      "y": 248,
+      "cols": 6,
+      "rows": 3,
+      "depth": 4
+    }
+  ],
+  "beams": [
+    [60, 16, 4, 144],
+    [164, 16, 4, 128],
+    [264, 16, 4, 128],
+    [368, 0, 8, 192],
+    [64, 80, 304, 4],
+    [64, 144, 304, 8],
+    [396, 16, 4, 160],
+    [608, 16, 8, 160],
+    [400, 24, 208, 8],
+    [400, 136, 208, 6],
+    [400, 176, 208, 6],
+    [428, 140, 4, 36],
+    [460, 140, 4, 36],
+    [492, 140, 4, 36],
+    [524, 140, 4, 36],
+    [556, 140, 4, 36],
+    [588, 140, 4, 36]
+  ],
+  "objects": [
+    {
+      "id": "shelf",
+      "frame": "shelf",
+      "x": 4,
+      "y": 80,
+      "footprint": [0, 160, 64, 48],
+      "zone": "bookshelf",
+      "depth": 208
+    },
+    { "id": "books", "frame": "books", "x": 4, "y": 0, "depth": 100 },
+    {
+      "id": "desk",
+      "frame": "desk",
+      "x": 112,
+      "y": 136,
+      "footprint": [112, 160, 96, 32],
+      "zone": "desk",
+      "depth": 192
+    },
+    {
+      "id": "chair",
+      "frame": "chair",
+      "x": 152,
+      "y": 192,
+      "footprint": [160, 224, 48, 48],
+      "depth": 272
+    },
+    { "id": "sofa-rug", "frame": "runner", "x": 544, "y": 240, "depth": 4 },
+    {
+      "id": "sofa",
+      "frame": "sofa",
+      "x": 528,
+      "y": 240,
+      "footprint": [528, 256, 96, 48],
+      "zone": "sofa",
+      "depth": 304
+    },
+    {
+      "id": "balcony-chair",
+      "frame": "armchair",
+      "x": 544,
+      "y": 112,
+      "footprint": [544, 144, 64, 32],
+      "depth": 176
+    },
+    {
+      "id": "coffee-table",
+      "frame": "table",
+      "x": 496,
+      "y": 112,
+      "footprint": [496, 144, 32, 32],
+      "depth": 176
+    },
+    {
+      "id": "plant-a",
+      "frame": "plant",
+      "x": 72,
+      "y": 128,
+      "footprint": [80, 176, 16, 16],
+      "depth": 192
+    },
+    {
+      "id": "plant-b",
+      "frame": "plant",
+      "x": 224,
+      "y": 128,
+      "footprint": [224, 176, 32, 16],
+      "zone": "plants",
+      "depth": 192
+    },
+    {
+      "id": "plant-c",
+      "frame": "plant",
+      "x": 352,
+      "y": 144,
+      "footprint": [352, 192, 32, 16],
+      "depth": 208
+    },
+    {
+      "id": "plant-d",
+      "frame": "plant",
+      "x": 400,
+      "y": 112,
+      "footprint": [400, 160, 32, 16],
+      "depth": 176
+    },
+    {
+      "id": "plant-e",
+      "frame": "plant",
+      "x": 592,
+      "y": 80,
+      "footprint": [592, 128, 32, 16],
+      "depth": 144
+    },
+    {
+      "id": "plant-f",
+      "frame": "plant",
+      "x": 608,
+      "y": 272,
+      "footprint": [608, 320, 32, 16],
+      "depth": 336
+    },
+    {
+      "id": "plant-g",
+      "frame": "plant",
+      "x": 16,
+      "y": 272,
+      "footprint": [16, 320, 32, 16],
+      "depth": 336
+    },
+    {
+      "id": "plant-h",
+      "frame": "plant",
+      "x": 472,
+      "y": 256,
+      "footprint": [480, 304, 16, 16],
+      "depth": 320
+    },
+    { "id": "board", "frame": "board", "x": 608, "y": 16, "depth": 120 },
+    {
+      "id": "wall-window",
+      "frame": "window",
+      "x": 608,
+      "y": 144,
+      "depth": 200
+    },
+    { "id": "food", "frame": "bowl", "x": 512, "y": 304, "depth": 5 },
+    { "id": "water", "frame": "bowl", "x": 544, "y": 304, "depth": 5 },
+    { "id": "toy", "frame": "toy", "x": 352, "y": 272, "depth": 6 },
+    { "id": "notebook", "frame": "notebook", "x": 176, "y": 128, "depth": 194 },
+    { "id": "pinned-note", "frame": "notebook", "x": 608, "y": 48, "depth": 121 },
+    { "id": "lamp-a", "frame": "lamp", "x": 208, "y": 120, "depth": 194 },
+    { "id": "lamp-b", "frame": "lamp", "x": 584, "y": 208, "depth": 305 }
+  ],
+  "hotspots": [
+    { "id": "research", "label": "Bookshelf · Research", "x": 42, "y": 122 },
+    { "id": "projects", "label": "Desk · Projects", "x": 156, "y": 157 },
+    { "id": "about", "label": "Window · About", "x": 274, "y": 92 },
+    { "id": "cv", "label": "Notice board · CV", "x": 624, "y": 76 },
+    { "id": "contact", "label": "Coffee · Contact", "x": 514, "y": 132 }
+  ],
+  "zones": {
+    "desk": [
+      [120, 216],
+      [136, 216]
+    ],
+    "bookshelf": [
+      [72, 216],
+      [88, 216]
+    ],
+    "sofa": [
+      [520, 248],
+      [504, 248]
+    ],
+    "food": [
+      [520, 328],
+      [552, 328]
+    ],
+    "play": [
+      [360, 312],
+      [376, 312],
+      [344, 312]
+    ],
+    "plants": [
+      [248, 216],
+      [264, 216]
+    ],
+    "window": [
+      [280, 168],
+      [312, 168]
+    ],
+    "balcony": [
+      [456, 168],
+      [472, 168]
+    ],
+    "board": [
+      [600, 216],
+      [584, 216]
+    ]
+  }
+}
