@@ -1,0 +1,134 @@
+{
+  "origin": [0, 0],
+  "textures": {
+    "furniture": "interior/furniture-state-1.png",
+    "furniture2": "interior/furniture-state-2.png",
+    "tiles": "interior/floors-walls.png",
+    "doors": "interior/doors-windows.png",
+    "items": "interior/small-items.png"
+  },
+  "frames": {
+    "floor": {
+      "texture": "tiles",
+      "rect": [16, 84, 16, 16],
+      "role": "wood floor and balcony decking"
+    },
+    "wall": {
+      "texture": "tiles",
+      "rect": [148, 20, 16, 16],
+      "role": "plaster walls"
+    },
+    "beam": {
+      "texture": "tiles",
+      "rect": [84, 56, 16, 16],
+      "role": "window mullions, balcony roof and railing"
+    },
+    "desk": {
+      "texture": "furniture",
+      "rect": [0, 32, 48, 32],
+      "role": "projects desk"
+    },
+    "shelf": {
+      "texture": "furniture",
+      "rect": [32, 64, 48, 48],
+      "role": "research bookshelf"
+    },
+    "books": {
+      "texture": "furniture",
+      "rect": [96, 64, 48, 48],
+      "role": "second bookcase"
+    },
+    "sofa": {
+      "texture": "furniture",
+      "rect": [88, 160, 48, 32],
+      "role": "sleeping sofa"
+    },
+    "chair": {
+      "texture": "furniture",
+      "rect": [176, 112, 32, 48],
+      "role": "desk armchair"
+    },
+    "armchair": {
+      "texture": "furniture2",
+      "rect": [144, 160, 32, 32],
+      "role": "balcony seat"
+    },
+    "table": {
+      "texture": "furniture",
+      "rect": [176, 0, 16, 32],
+      "role": "balcony coffee table"
+    },
+    "plant": {
+      "texture": "furniture",
+      "rect": [0, 160, 16, 32],
+      "role": "potted plants around room edges"
+    },
+    "rug": {
+      "texture": "furniture",
+      "rect": [160, 32, 48, 32],
+      "role": "rug border source"
+    },
+    "rug-fill": {
+      "texture": "furniture",
+      "rect": [168, 40, 16, 16],
+      "role": "tileable central carpet weave"
+    },
+    "runner": {
+      "texture": "furniture",
+      "rect": [168, 64, 32, 48],
+      "role": "sofa rug"
+    },
+    "board": {
+      "texture": "furniture",
+      "rect": [32, 112, 16, 48],
+      "role": "profile notice board"
+    },
+    "lamp": {
+      "texture": "furniture",
+      "rect": [0, 256, 16, 32],
+      "role": "warm desk and sofa lamps"
+    },
+    "bowl": {
+      "texture": "items",
+      "rect": [32, 64, 16, 16],
+      "role": "food and water bowls"
+    },
+    "toy": {
+      "texture": "items",
+      "rect": [16, 32, 16, 16],
+      "role": "cat play object"
+    },
+    "notebook": {
+      "texture": "items",
+      "rect": [0, 48, 16, 16],
+      "role": "GitHub desk notebook and pinned profile notes"
+    },
+    "window": {
+      "texture": "doors",
+      "rect": [96, 48, 32, 32],
+      "role": "small right wall window"
+    }
+  },
+  "cats": {
+    "size": 32,
+    "columns": 11,
+    "origin": [0.5, 0.75],
+    "textures": ["cat-1", "cat-1-6", "cat-1-9"],
+    "clips": {
+      "idle": { "row": 0, "count": 1, "duration": 600 },
+      "sit": { "row": 0, "count": 1, "duration": 600 },
+      "observe": { "row": 0, "start": 1, "count": 1, "duration": 600 },
+      "walk-down": { "row": 4, "count": 4, "duration": 140 },
+      "walk-up": { "row": 5, "count": 4, "duration": 140 },
+      "walk-right": { "row": 6, "count": 8, "duration": 110 },
+      "walk-left": { "row": 7, "count": 8, "duration": 110 },
+      "sleep": { "row": 12, "count": 2, "duration": 800 },
+      "eat": { "row": 21, "count": 8, "duration": 180 },
+      "meow": { "row": 28, "count": 3, "duration": 240 },
+      "react": { "row": 32, "count": 8, "duration": 140 },
+      "groom": { "row": 36, "count": 9, "duration": 160 },
+      "play": { "row": 44, "count": 8, "duration": 120 }
+    },
+    "sourceNote": "Aseprite files are single-frame 352x1696 sheet documents, not timelines. Clip rows verified against the annotated cat sheet and Frame indexes.png. Annotated sheet has an 80px legend and is source-only."
+  }
+}
