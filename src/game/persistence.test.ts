@@ -7,6 +7,22 @@ import {
 } from "./persistence";
 
 describe("cat-room persistence", () => {
+  it("accepts studio zones and resets obsolete locations without losing progress", () => {
+    const save = loadSave(
+      JSON.stringify({
+        cats: {
+          miso: { currentZone: "kitchen", friendship: 0.7, timesFed: 4 },
+          pixel: { currentZone: "board", friendship: 0.6, timesPetted: 8 },
+        },
+      }),
+      1000,
+    );
+    expect(save.cats.miso.currentZone).toBe("kitchen");
+    expect(save.cats.miso.timesFed).toBe(4);
+    expect(save.cats.pixel.currentZone).toBe("desk");
+    expect(save.cats.pixel.friendship).toBe(0.6);
+    expect(save.cats.pixel.timesPetted).toBe(8);
+  });
   it("falls back safely when localStorage contains invalid JSON", () => {
     const save = loadSave("{not-json", 1_000);
     expect(save.schemaVersion).toBe(1);

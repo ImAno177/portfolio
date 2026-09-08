@@ -1,3 +1,5 @@
+import type room from "./data/room.json";
+
 export type TimeBlock =
   | "morning"
   | "active-morning"
@@ -19,16 +21,7 @@ export type CatAction =
   | "react"
   | "meow";
 
-export type ZoneId =
-  | "desk"
-  | "bookshelf"
-  | "sofa"
-  | "food"
-  | "play"
-  | "plants"
-  | "window"
-  | "balcony"
-  | "board";
+export type ZoneId = keyof typeof room.zones;
 
 export interface CatPersonality {
   sleepiness: number;

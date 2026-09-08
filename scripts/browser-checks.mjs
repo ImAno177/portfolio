@@ -96,6 +96,22 @@ export async function runRoomChecks() {
       v.destination = { x: 240, y: 184 };
       v.until = Infinity;
     }
+  const finalZone = Object.keys(
+    (await import("../src/game/data/room.json")).default.zones,
+  ).at(-1);
+  const random = Math.random;
+  let chosenZone;
+  try {
+    Math.random = () => 1 - Number.EPSILON;
+    scene.requestAction(cat, "walk");
+    chosenZone = cat.agent.targetZone ?? cat.agent.currentZone;
+  } finally {
+    Math.random = random;
+  }
+  check(
+    "random walking can select the final configured zone",
+    chosenZone === finalZone,
+  );
   scene.requestAction(cat, "eat");
   check(
     "eat waits for arrival",

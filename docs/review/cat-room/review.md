@@ -10,9 +10,9 @@ This revision supersedes the spatial approval below. The user correctly identifi
 - Sofa approaches are (552,296) and (584,296); cushion feet are (552,268) and (584,268). Lamp rests on its own side table; a separate low tea table sits in front.
 - Refrigerator can open/close using supplied alternate artwork through a native keyboard-accessible button. It is disabled while paused/loading/failed and resets on room retry.
 - Walkable floor areas, walls, furniture footprints, zones and link positions are defined by room data. The fallback is regenerated from that same scene.
-- Fresh checks: 29 logic tests, 23 browser assertions, 30 atlas frames and 186 cat animation references; Astro check/build pass (Phaser chunk-size warning remains).
+- Fresh checks: 30 logic tests, 24 browser assertions, 30 atlas frames and 186 cat animation references; Astro check/build pass (Phaser chunk-size warning remains).
 - 30-second observation of all six cats covered 53 animation frames and found no grounded feet in blocked floor cells. This does not by itself prove all spatial or animation quality.
-- Current desktop static morning and mobile night renders inspected; mobile remains 16:9 without horizontal overflow. A new independent spatial review is pending. No merge, push or deploy of this revision yet.
+- Current desktop static morning and mobile night renders inspected; mobile remains 16:9 without horizontal overflow. Independent spatial review found no critical placement issues, but identified the obsolete board zone and hardcoded random-zone count. Both are fixed: kitchen replaces board, zone types/save validation/random selection derive from room data. Regression checks cover old-save progress preservation and selecting the final configured zone (confirmed failing under an intentionally shortened selection range, then passing with the fix). No merge, push or deploy of this revision yet.
 
 ## Earlier revision history — not current studio approval
 

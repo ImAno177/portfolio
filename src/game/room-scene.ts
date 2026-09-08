@@ -337,6 +337,7 @@ export class CatRoomScene extends Phaser.Scene {
     action: CatAction,
     explicitZone?: ZoneId,
   ): boolean {
+    const zones = Object.keys(room.zones) as ZoneId[];
     const zone =
       explicitZone ??
       (action === "eat"
@@ -350,9 +351,7 @@ export class CatRoomScene extends Phaser.Scene {
                 ? "window"
                 : "balcony"
               : action === "walk"
-                ? (Object.keys(room.zones) as ZoneId[])[
-                    Math.floor(Math.random() * 9)
-                  ]
+                ? zones[Math.floor(Math.random() * zones.length)]
                 : undefined);
     if (zone) {
       const occupied = [...this.views.values()]

@@ -1,4 +1,5 @@
 import { createCatAgents } from "./data/cats";
+import room from "./data/room.json";
 import { advanceNeeds, getTimeBlock, getTimeProfile } from "./simulation";
 import type {
   CatAction,
@@ -26,17 +27,7 @@ const CAT_ACTIONS: readonly CatAction[] = [
   "react",
   "meow",
 ];
-const ZONES: readonly ZoneId[] = [
-  "desk",
-  "bookshelf",
-  "sofa",
-  "food",
-  "play",
-  "plants",
-  "window",
-  "balcony",
-  "board",
-];
+const ZONES = Object.keys(room.zones) as ZoneId[];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
