@@ -9,6 +9,6 @@ Branch: `fix/asset-cat-room`; baseline `759d1fb`. GitHub profile out of scope.
 5. Simulation/save: integrated and tested. Cooldowns, action needs, validated saves, hourly offline reconciliation.
 6. Sky/loading: implemented. Shared sky cropped into openings (Phaser4 WebGL does not support legacy setMask), seven lighting profiles, dynamic import, retry, pause/visibility handling.
 
-Checks: 22 logic tests; 21 executable browser checks in scripts/browser-checks.mjs; Astro build passes. Desktop/mobile rendered and inspected. Independent final visual/furniture review resolved the remaining hotspot-resize, lamp-depth and balcony-entry findings. Main integration and deployment remain pending.
+Checks: 22 logic tests; 21 executable browser checks in scripts/browser-checks.mjs; Astro build passes. Desktop/mobile rendered and inspected. Independent final visual/furniture review resolved the remaining hotspot-resize, lamp-depth and balcony-entry findings. Local review repeated and fast-forward merge into main completed on 2026-09-08; 22 tests passed on main. Push, deployment and live verification remain pending.
 
 Release gate: tests, static asset validation, browser interaction/accessibility checks, morning/sunset/night screenshots, then deploy and live verification. No main merge before this gate.

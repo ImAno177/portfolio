@@ -32,4 +32,4 @@ The room is a browser-game screen, not a canvas framed by a portfolio landing pa
 
 Independent final review: resolved hotspot resizing, lamp occlusion and balcony entry; fresh desktop/mobile captures reviewed with no remaining findings in that scope. Hotspots observe the actual canvas as well as the viewport; lamp bodies retain furniture depth while only their glow is foreground.
 
-Local implementation checks pass. Main integration, deployment and live verification remain pending; this document is not evidence of a deployed release.
+Local review repeated on 2026-09-08: 22 logic tests, 21 browser checks, asset validation and build passed; desktop sunset and mobile night renders inspected. Merged fast-forward into local main; 22 tests passed again on main. Deployment and live verification remain pending; this document is not evidence of a deployed release.
