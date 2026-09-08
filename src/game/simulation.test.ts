@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  advanceActionNeeds,
   advanceNeeds,
   chooseAction,
   getTimeBlock,
   getTimeProfile,
-  scoreActions
+  scoreActions,
 } from "./simulation";
 
 const cat = {
@@ -19,7 +20,7 @@ const cat = {
     playfulness: 0.2,
     foodMotivation: 0.6,
     independence: 0.3,
-    chaos: 0.1
+    chaos: 0.1,
   },
   needs: { energy: 0.2, hunger: 0.7, social: 0.4, fun: 0.3, comfort: 0.5 },
   currentState: "idle",
@@ -27,7 +28,7 @@ const cat = {
   friendship: 0,
   lastStateAt: 0,
   lastInteractionAt: 0,
-  actionCooldowns: {}
+  actionCooldowns: {},
 } as const;
 
 describe("visitor-local cat simulation", () => {
@@ -56,7 +57,7 @@ describe("visitor-local cat simulation", () => {
       elapsedInState: 30_000,
       occupiedZones: new Set(["desk"]),
       recentActions: ["sleep"],
-      randomJitter: 0
+      randomJitter: 0,
     });
     const sleep = scores.find((entry) => entry.action === "sleep");
     const play = scores.find((entry) => entry.action === "play");
@@ -64,10 +65,23 @@ describe("visitor-local cat simulation", () => {
     expect(scores.every((entry) => Number.isFinite(entry.score))).toBe(true);
   });
 
+  it("keeps malformed randomness from producing non-finite scores", () => {
+    const scores = scoreActions(cat, {
+      hour: 2,
+      now: 100_000,
+      elapsedInState: 30_000,
+      occupiedZones: new Set(),
+      recentActions: [],
+      randomJitter: Number.POSITIVE_INFINITY,
+    });
+
+    expect(scores.every((entry) => Number.isFinite(entry.score))).toBe(true);
+  });
+
   it("selects by normalized weight instead of always picking the first item", () => {
     const scores = [
       { action: "sleep" as const, score: 1 },
-      { action: "play" as const, score: 3 }
+      { action: "play" as const, score: 3 },
     ];
     expect(chooseAction(scores, () => 0.1)).toBe("sleep");
     expect(chooseAction(scores, () => 0.9)).toBe("play");
@@ -77,10 +91,47 @@ describe("visitor-local cat simulation", () => {
     const next = advanceNeeds(
       { energy: 0.9, hunger: 0.1, social: 0.2, fun: 0.2, comfort: 0.4 },
       180,
-      getTimeProfile("night")
+      getTimeProfile("night"),
     );
     expect(next.energy).toBeLessThan(0.9);
     expect(next.hunger).toBeGreaterThan(0.1);
-    expect(Object.values(next).every((value) => value >= 0 && value <= 1)).toBe(true);
+    expect(Object.values(next).every((value) => value >= 0 && value <= 1)).toBe(
+      true,
+    );
+  });
+
+  it("applies action-specific need changes without leaving normalized bounds", () => {
+    const start = {
+      energy: 0.5,
+      hunger: 0.5,
+      social: 0.5,
+      fun: 0.5,
+      comfort: 0.5,
+    };
+    const idle = advanceActionNeeds(start, 60, "idle");
+    const sleep = advanceActionNeeds(start, 60, "sleep");
+    const eat = advanceActionNeeds(start, 60, "eat");
+    const play = advanceActionNeeds(start, 60, "play");
+    const groom = advanceActionNeeds(start, 60, "groom");
+
+    expect(idle.energy).toBeLessThan(start.energy);
+    expect(idle.hunger).toBeGreaterThan(start.hunger);
+    expect(idle.fun).toBeLessThan(start.fun);
+    expect(sleep.energy).toBeGreaterThan(start.energy);
+    expect(eat.hunger).toBeLessThan(start.hunger);
+    expect(play.fun).toBeGreaterThan(start.fun);
+    expect(play.energy).toBeLessThan(start.energy);
+    expect(groom.comfort).toBeGreaterThan(start.comfort);
+
+    const clamped = advanceActionNeeds(
+      { energy: 0, hunger: 1, social: 0, fun: 1, comfort: 0 },
+      Number.MAX_SAFE_INTEGER,
+      "sleep",
+    );
+    expect(
+      Object.values(clamped).every(
+        (value) => value >= 0 && value <= 1 && Number.isFinite(value),
+      ),
+    ).toBe(true);
   });
 });
