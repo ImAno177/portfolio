@@ -509,7 +509,7 @@ export class CatRoomScene extends Phaser.Scene {
       glow.setAlpha(
         (current.light + (next.light - current.light) * blend) * 1.2,
       );
-    for (const lamp of this.lamps) lamp.setTint(0xffe7ac).setDepth(960);
+    for (const lamp of this.lamps) lamp.setTint(0xffe7ac);
     this.options.onTime?.(hour, getTimeBlock(hour));
   }
 }

@@ -74,7 +74,8 @@ export function setupPortfolioUI(): void {
     if (dialog.open) dialog.close();
     restoreSection();
     if (updateHash) history.pushState(null, "", "#home");
-    const triggerMenu=trigger?.closest('details');if(triggerMenu)triggerMenu.open=true;
+    const triggerMenu = trigger?.closest("details");
+    if (triggerMenu) triggerMenu.open = true;
     trigger?.focus();
     trigger = undefined;
   }
@@ -151,8 +152,9 @@ export function setupPortfolioUI(): void {
       }
     });
   function selectedCat(cat: CatAgent) {
-    const controls=document.querySelector<HTMLDetailsElement>('.cat-controls');
-    if(selected?.id!==cat.id && controls)controls.open=true;
+    const controls =
+      document.querySelector<HTMLDetailsElement>(".cat-controls");
+    if (selected?.id !== cat.id && controls) controls.open = true;
     selected = cat;
     picker.value = cat.id;
     text(
@@ -244,9 +246,10 @@ export function setupPortfolioUI(): void {
       spot.style.top = `${top + (Number(spot.dataset.worldY) / 360) * height}px`;
     });
   }
-  new ResizeObserver(() => requestAnimationFrame(alignHotspots)).observe(
-    viewport,
+  const hotspotResize = new ResizeObserver(() =>
+    requestAnimationFrame(alignHotspots),
   );
+  hotspotResize.observe(viewport);
   const hourParam = import.meta.env.DEV
     ? new URLSearchParams(location.search).get("hour")
     : null;
@@ -259,7 +262,9 @@ export function setupPortfolioUI(): void {
       : d.getHours() + d.getMinutes() / 60;
   };
   function fail(message: string) {
-    const settings=document.querySelector<HTMLDetailsElement>('.settings-menu');if(settings)settings.open=true;
+    const settings =
+      document.querySelector<HTMLDetailsElement>(".settings-menu");
+    if (settings) settings.open = true;
     unavailable = true;
     window.clearTimeout(timeout);
     viewport.dataset.ready = "false";
@@ -282,6 +287,8 @@ export function setupPortfolioUI(): void {
       .querySelectorAll<HTMLButtonElement>("[data-cat-action]")
       .forEach((button) => (button.disabled = true));
     room?.destroy();
+    hotspotResize.disconnect();
+    hotspotResize.observe(viewport);
     room = undefined;
     root!.querySelectorAll("canvas").forEach((c) => c.remove());
     viewport.dataset.ready = "false";
@@ -310,6 +317,8 @@ export function setupPortfolioUI(): void {
             content.hidden = location.hash !== "#text";
             retry.hidden = true;
             requestAnimationFrame(alignHotspots);
+            const canvas = root!.querySelector("canvas");
+            if (canvas) hotspotResize.observe(canvas);
             syncPause();
           },
           onError: (message) => {

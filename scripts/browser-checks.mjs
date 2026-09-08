@@ -22,6 +22,38 @@ export async function runRoomChecks() {
   };
   await waitReady();
   let { scene, game } = window.__catRoom;
+  scene.applySky();
+  check(
+    "lighting preserves furniture occlusion depths",
+    scene.lamps.every((lamp) => lamp.depth < 900),
+  );
+  const canvas = query("canvas"),
+    canvasStyle = canvas.style.cssText;
+  canvas.style.width = "300px";
+  canvas.style.height = "168.75px";
+  await wait(100);
+  const canvasRect = canvas.getBoundingClientRect();
+  const hotspotError = Math.max(
+    ...[...document.querySelectorAll("[data-world-x]")].map((el) => {
+      const r = el.getBoundingClientRect();
+      return Math.hypot(
+        r.x +
+          r.width / 2 -
+          canvasRect.x -
+          (Number(el.dataset.worldX) * canvasRect.width) / 640,
+        r.y +
+          r.height / 2 -
+          canvasRect.y -
+          (Number(el.dataset.worldY) * canvasRect.height) / 360,
+      );
+    }),
+  );
+  canvas.style.cssText = canvasStyle;
+  await wait(100);
+  check(
+    "hotspots follow actual canvas resizing inside letterbox",
+    hotspotError < 1,
+  );
   const cat = scene.views.get("pixel");
   scene.selectCat("pixel");
   cat.agent.lastInteractionAt = 0;
@@ -39,6 +71,10 @@ export async function runRoomChecks() {
   cat.destination = { x: 312, y: 328 };
   for (const v of scene.views.values())
     if (v !== cat) {
+      v.path = [];
+      v.surface = undefined;
+      v.transitDepth = undefined;
+      v.sprite.setPosition(88, 216);
       v.destination = { x: 88, y: 216 };
       v.until = Infinity;
     }
@@ -103,9 +139,48 @@ export async function runRoomChecks() {
     "reduced motion does not teleport",
     cat.sprite.x === position[0] && cat.sprite.y === position[1],
   );
+  for (const v of scene.views.values()) {
+    v.path = [];
+    v.surface = undefined;
+    v.transitDepth = undefined;
+    v.until = Infinity;
+    v.sprite.setPosition(72, 216);
+    v.destination = { x: 72, y: 216 };
+  }
+  const sleepers = [scene.views.get("miso"), scene.views.get("luna")];
+  sleepers.forEach((v, i) => {
+    v.sprite.setPosition(552 + i * 32, 312);
+    v.destination = { x: 552 + i * 32, y: 312 };
+    scene.requestAction(v, "sleep");
+  });
+  for (let i = 0; i < 30; i++) scene.update(0, 100);
+  check(
+    "both cats sleep on distinct sofa cushions",
+    sleepers.every(
+      (v, i) =>
+        v.agent.currentState === "sleep" &&
+        v.sprite.x === 552 + i * 32 &&
+        v.sprite.y === 284,
+    ),
+  );
+  scene.requestAction(sleepers[0], "meow", "play");
+  check(
+    "leaving sofa first descends to its floor approach",
+    sleepers[0].path[0].x === 552 && sleepers[0].path[0].y === 312,
+  );
+  for (let i = 0; i < 300 && sleepers[0].agent.currentState === "walk"; i++)
+    scene.update(0, 100);
+  check(
+    "sofa departure reaches the floor destination without teleport",
+    sleepers[0].agent.currentZone === "play" &&
+      sleepers[0].agent.currentState === "meow" &&
+      !sleepers[0].surface,
+  );
   const oldGame = game;
   let destroyed = false;
-  oldGame.events.once('destroy', () => { destroyed = true; });
+  oldGame.events.once("destroy", () => {
+    destroyed = true;
+  });
   query("canvas").dispatchEvent(
     new Event("webglcontextlost", { cancelable: true }),
   );
