@@ -10,13 +10,13 @@ const links=['about','projects','research','cv','contact'];
  <a class="skip-link" href="#about">Skip to portfolio</a>
  <div class="site-shell" data-base-path={base}>
   <header class="site-header">
-   <a class="wordmark" href="#home">imano177<span> / room with a view</span></a>
+   <details class="game-menu"><summary aria-label="Open portfolio menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></summary>
    <nav aria-label="Portfolio">{links.map(id=><a href={`#${id}`}>{id==='cv'?'CV':id}</a>)}</nav>
    <a class="text-toggle" href="#text" data-text-toggle>Text version</a>
+   </details>
   </header>
   <main id="home">
    <section class="room-stage" aria-label="Interactive pixel-art cat room">
-    <div class="room-caption"><span>PERSONAL STUDIO / 01</span><span data-room-time>Welcome in</span></div>
     <div class="room-viewport" data-room-viewport>
      <img class="room-fallback" src={`${base}assets/room/fallback.png`} width="640" height="360" alt="A pixel-art studio with a bookshelf and desk on the left, a sky-facing balcony, a central rug and a sofa on the right." />
      <div class="cat-room" data-cat-room-root></div>
@@ -27,21 +27,22 @@ const links=['about','projects','research','cv','contact'];
     </div>
     <div class="room-toolbar">
      <p data-room-status role="status">The room is waking up…</p>
-     <div class="room-buttons">
+     <details class="game-menu settings-menu"><summary aria-label="Room settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></svg></summary><div class="room-buttons">
       <button data-retry hidden>Retry room</button>
       <button data-hotspot-toggle aria-pressed="false">Show places</button>
       <button data-pause-toggle aria-pressed="false">Pause room</button>
       <button data-motion-toggle aria-pressed="false">Gentle motion</button>
-      <button data-fullscreen hidden>Enlarge</button>
-     </div>
+     <button data-fullscreen hidden>Enlarge</button>
+     <span data-room-time></span>
+     </div></details>
     </div>
    </section>
-   <section class="cat-controls" aria-label="Cat controls">
-    <label class="cat-picker">KEEP COMPANY WITH <select data-cat-select><option value="">Choose a cat</option>{CAT_SEEDS.map(cat=><option value={cat.id}>{cat.name}</option>)}</select></label>
+   <details class="cat-controls game-menu" aria-label="Cat controls"><summary aria-label="Choose a cat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13V4l5 4h6l5-4v9c0 5-4 7-8 7s-8-2-8-7ZM8 13h1m6 0h1m-5 3h2"/></svg></summary><div class="cat-control-body">
+    <label class="cat-picker"><select data-cat-select aria-label="Choose a cat"><option value="">Choose a cat</option>{CAT_SEEDS.map(cat=><option value={cat.id}>{cat.name}</option>)}</select></label>
     <div class="cat-actions">{['pet','feed','play','call'].map(action=><button data-cat-action={action} disabled>{action}</button>)}</div>
     <p data-selected-cat>Six small lives. Their own pace.</p>
     <p class="interaction-status" data-interaction-status role="status" aria-live="polite">Select a cat in the room or from the menu.</p>
-   </section>
+   </div></details>
    <div id="text" class="portfolio-content" data-portfolio-content>
     <section id="about" class="content-section" tabindex="-1"><p class="eyebrow">WINDOW / 01</p><h1>Hi, I'm {profile.name}.</h1><p>{profile.summary}</p><p>I like inspectable systems, local-first tools, and a carefully riced desktop. This is my little place on the internet.</p><dl><dt>Focus</dt><dd>{profile.interests.join(' · ')}</dd><dt>At home with</dt><dd>{profile.languages.join(' / ')}</dd><dt>Workspace</dt><dd>{profile.habitat} · {profile.editor}</dd></dl><a href={`mailto:${profile.email}`}>Say hello ↗</a></section>
     <section id="projects" class="content-section" tabindex="-1"><p class="eyebrow">DESK / 02</p><h2>Things I've built.</h2>{projects.map(project=><article><small>{project.type}</small><h3><a href={project.href} target="_blank" rel="noreferrer">{project.title} ↗</a></h3><p>{project.description}</p><p class="tags">{project.tags.join(' / ')}</p></article>)}<a href={profile.github} target="_blank" rel="noreferrer">All repositories ↗</a></section>

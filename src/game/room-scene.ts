@@ -1,299 +1,515 @@
 import Phaser from "phaser";
+import atlas from "./data/atlas.json";
+import room from "./data/room.json";
 import { createCatAgents } from "./data/cats";
-import { advanceNeeds, chooseAction, getTimeBlock, getTimeProfile, MIN_STATE_DURATION_MS, scoreActions } from "./simulation";
-import type { CatAction, CatAgent, CatSaveState, PortfolioSave, TimeBlock, ZoneId } from "./types";
+import {
+  advanceActionNeeds,
+  chooseAction,
+  getTimeBlock,
+  scoreActions,
+} from "./simulation";
+import { findPath, reserveDestination, zoneSlots, type Point } from "./navigation";
+import type {
+  CatAction,
+  CatAgent,
+  PortfolioSave,
+  TimeBlock,
+  ZoneId,
+} from "./types";
 
 export type CatInteraction = "pet" | "feed" | "play" | "call";
-
 export interface RoomSceneOptions {
   basePath: string;
   save?: PortfolioSave;
   reducedMotion?: boolean;
   getHour?: () => number;
   onReady?: () => void;
+  onError?: (message: string) => void;
   onTime?: (hour: number, block: TimeBlock) => void;
   onCatSelected?: (cat: CatAgent) => void;
   onInteraction?: (cat: CatAgent, action: CatInteraction) => void;
   onSnapshot?: (cats: Record<string, CatAgent>) => void;
   onStatus?: (message: string) => void;
 }
-
-interface CatView {
+type View = {
   agent: CatAgent;
   sprite: Phaser.GameObjects.Sprite;
   label: Phaser.GameObjects.Text;
-}
-
-const WIDTH = 960;
-const WALK_ZONES: ZoneId[] = ["desk", "bookshelf", "sofa", "food", "play", "plants", "window", "balcony"];
-const ZONE_POINTS: Record<ZoneId, { x: number; y: number }> = {
-  desk: { x: 190, y: 390 },
-  bookshelf: { x: 70, y: 300 },
-  sofa: { x: 650, y: 415 },
-  food: { x: 810, y: 390 },
-  play: { x: 500, y: 430 },
-  plants: { x: 350, y: 405 },
-  window: { x: 850, y: 290 },
-  balcony: { x: 540, y: 315 },
-  board: { x: 390, y: 255 }
+  path: Point[];
+  destination: Point;
+  pending: CatAction;
+  until: number;
+  history: CatAction[];
+  surface?: Point;
+  transitDepth?: number;
+  rerouteAt?: number;
 };
-const SKY_KEYS: Record<TimeBlock, string> = {
-  morning: "sky-01",
-  "active-morning": "sky-01",
-  midday: "sky-02",
-  afternoon: "sky-02",
-  sunset: "sky-03",
-  evening: "sky-04",
-  night: "sky-04"
+const hourNow = () => {
+  const d = new Date();
+  return d.getHours() + d.getMinutes() / 60;
 };
-const SKY_TINTS: Record<TimeBlock, number> = {
-  morning: 0xfff0c1,
-  "active-morning": 0xffffff,
-  midday: 0xffffff,
-  afternoon: 0xffe5bf,
-  sunset: 0xffb08e,
-  evening: 0xb0b5e8,
-  night: 0x7386c7
+const DURATIONS: Partial<Record<CatAction, number>> = {
+  sleep: 30000,
+  eat: 10000,
+  play: 12000,
+  groom: 10000,
+  observe: 18000,
 };
-const STATE_FRAMES: Partial<Record<CatAction, number>> = {
-  idle: 0,
-  walk: 2,
-  sit: 22,
-  sleep: 44,
-  groom: 66,
-  eat: 88,
-  observe: 110,
-  play: 132,
-  react: 154,
-  meow: 176
-};
-
-function assetUrl(basePath: string, path: string): string {
-  return `${basePath}${path.replace(/^\//, "")}`;
-}
-
-function currentHour(): number {
-  const now = new Date();
-  return now.getHours() + now.getMinutes() / 60;
-}
+// Explicit approach -> perch links. Feet travel to the approach before climbing.
+const SKY_STOPS = [
+  { hour: 0, sky: 1, tint: 0x7986bb, light: 0.28 },
+  { hour: 5, sky: 4, tint: 0xffdfad, light: 0.07 },
+  { hour: 9, sky: 4, tint: 0xfff3da, light: 0 },
+  { hour: 12, sky: 4, tint: 0xffffff, light: 0 },
+  { hour: 15, sky: 4, tint: 0xffd9a4, light: 0.04 },
+  { hour: 18, sky: 2, tint: 0xffba98, light: 0.12 },
+  { hour: 20, sky: 3, tint: 0xb7a1d9, light: 0.19 },
+  { hour: 24, sky: 1, tint: 0x7986bb, light: 0.28 },
+];
 
 export class CatRoomScene extends Phaser.Scene {
-  private readonly options: RoomSceneOptions;
-  private readonly views = new Map<string, CatView>();
-  private sky?: Phaser.GameObjects.Image;
+  private views = new Map<string, View>();
   private selectedId?: string;
-  private lastDecisionAt = 0;
-  private lastSnapshotAt = 0;
-  private reducedMotion: boolean;
-
-  constructor(options: RoomSceneOptions) {
+  private reduced: boolean;
+  private elapsed = 0;
+  private savedAt = 0;
+  private skyLayers = new Map<number, Phaser.GameObjects.Image[]>();
+  private lighting?: Phaser.GameObjects.Rectangle;
+  private failed = false;
+  private lamps: Phaser.GameObjects.Image[] = [];
+  private glows: Phaser.GameObjects.Image[] = [];
+  constructor(private options: RoomSceneOptions) {
     super("CatRoomScene");
-    this.options = options;
-    this.reducedMotion = Boolean(options.reducedMotion);
+    this.reduced = !!options.reducedMotion;
   }
-
   preload(): void {
-    const base = this.options.basePath;
-    for (const key of ["cat-1", "cat-1-6", "cat-1-9", "cat-text"]) {
-      this.load.spritesheet(key, assetUrl(base, `/assets/cats/${key}.png`), { frameWidth: 16, frameHeight: 16 });
-    }
-    for (const key of ["sky-01", "sky-02", "sky-03", "sky-04"]) {
-      this.load.image(key, assetUrl(base, `/assets/sky/${key}-orig-big.png`));
-    }
-  }
-
-  create(): void {
-    this.cameras.main.setBackgroundColor(0x12192d);
-    this.drawRoom();
-    this.sky = this.add.image(WIDTH / 2, 168, "sky-01").setDisplaySize(WIDTH, 336).setDepth(0);
-
-    const agents = createCatAgents(Date.now());
-    for (const [id, saved] of Object.entries(this.options.save?.cats ?? {})) {
-      if (!agents[id]) continue;
-      agents[id] = { ...agents[id], ...saved, needs: { ...saved.needs }, actionCooldowns: {} };
-    }
-    Object.values(agents).forEach((agent, index) => this.addCat(agent, index));
-    this.applySky();
-    this.options.onReady?.();
-    this.options.onStatus?.("Room online. Select a cat to open its controls.");
-  }
-
-  update(_time: number, delta: number): void {
-    this.lastDecisionAt += delta;
-    if (this.lastDecisionAt < (this.reducedMotion ? 2800 : 1300)) return;
-    this.lastDecisionAt = 0;
-
-    const now = Date.now();
-    const hour = this.options.getHour?.() ?? currentHour();
-    const block = getTimeBlock(hour);
-    const profile = getTimeProfile(block);
-    const occupied = new Set([...this.views.values()].map(({ agent }) => agent.currentZone));
-
-    for (const view of this.views.values()) {
-      view.agent.needs = advanceNeeds(view.agent.needs, 1.5 / 60, profile);
-      if (now - view.agent.lastStateAt < MIN_STATE_DURATION_MS) continue;
-      const action = chooseAction(
-        scoreActions(view.agent, {
-          hour,
-          now,
-          elapsedInState: now - view.agent.lastStateAt,
-          occupiedZones: occupied,
-          recentActions: [view.agent.currentState],
-          randomJitter: Math.random()
-        })
+    for (const [key, path] of Object.entries(atlas.textures))
+      this.load.image(key, `${this.options.basePath}assets/${path}`);
+    for (const key of atlas.cats.textures)
+      this.load.spritesheet(
+        key,
+        `${this.options.basePath}assets/cats/${key}.png`,
+        { frameWidth: 32, frameHeight: 32 },
       );
-      this.setAction(view, action, now);
+    for (let family = 1; family <= 4; family++)
+      for (let layer = 1; layer <= (family === 2 ? 5 : 4); layer++)
+        this.load.image(
+          `sky-${family}-${layer}`,
+          `${this.options.basePath}assets/sky/sky-0${family}-layer-${layer}.png`,
+        );
+    this.load.on("loaderror", (file: Phaser.Loader.File) => {
+      this.failed = true;
+      this.options.onError?.(
+        `Could not load ${file.key}. The text portfolio is still available.`,
+      );
+    });
+  }
+  create(): void {
+    if (this.failed) return;
+    try {
+      for (const [name, frame] of Object.entries(atlas.frames)) {
+        const [x, y, w, h] = frame.rect;
+        this.textures.get(frame.texture).add(name, 0, x, y, w, h);
+      }
+      for (const texture of atlas.cats.textures)
+        for (const [name, clip] of Object.entries(atlas.cats.clips)) {
+          const start = clip.row * 11 + ("start" in clip ? clip.start : 0);
+          this.anims.create({
+            key: `${texture}/${name}`,
+            frames: this.anims.generateFrameNumbers(texture, {
+              start,
+              end: start + clip.count - 1,
+            }),
+            frameRate: 1000 / clip.duration,
+            repeat: -1,
+          });
+        }
+      this.drawRoom();
+      const agents = createCatAgents(Date.now());
+      Object.values(agents).forEach((agent, index) => {
+        const saved = this.options.save?.cats[agent.id];
+        if (saved) {
+          agent.needs = { ...saved.needs };
+          agent.friendship = saved.friendship;
+          agent.lastInteractionAt = saved.lastInteractionAt;
+        }
+        // Migrate friendship/needs, not obsolete coordinates or an in-flight action.
+        const point = zoneSlots(agent.currentZone)[0];
+        const sprite = this.add
+          .sprite(point.x, point.y, agent.spriteVariant)
+          .setOrigin(0.5, 0.75)
+          .setScale(2)
+          .setInteractive({ useHandCursor: true });
+        const label = this.add
+          .text(point.x, point.y - 30, agent.name, {
+            fontFamily: "monospace",
+            fontSize: "10px",
+            color: "#fff2d7",
+            backgroundColor: "#30251f",
+            padding: { x: 4, y: 2 },
+          })
+          .setOrigin(0.5, 1)
+          .setDepth(1001)
+          .setVisible(false);
+        const view: View = {
+          agent,
+          sprite,
+          label,
+          path: [],
+          destination: point,
+          pending: "idle",
+          until: 6000 + index * 1500,
+          history: [],
+        };
+        sprite.on("pointerdown", () => this.selectCat(agent.id));
+        sprite.on("pointerover", () => label.setVisible(true));
+        sprite.on("pointerout", () =>
+          label.setVisible(this.selectedId === agent.id),
+        );
+        this.views.set(agent.id, view);
+        this.animate(view, "idle");
+        sprite.setDepth(point.y);
+      });
+      this.applySky();
+      this.options.onReady?.();
+      this.options.onStatus?.(
+        "Make yourself at home. Choose a cat or explore the room.",
+      );
+    } catch (error) {
+      this.options.onError?.(
+        `Room could not start: ${error instanceof Error ? error.message : "renderer error"}`,
+      );
     }
-    this.applySky();
-    this.options.onTime?.(hour, block);
-    if (now - this.lastSnapshotAt > 20_000) {
-      this.lastSnapshotAt = now;
+  }
+  update(_time: number, delta: number): void {
+    if (this.failed) return;
+    const seconds = Math.min(delta / 1000, 60);
+    this.elapsed += seconds * 1000;
+    for (const view of this.views.values()) {
+      view.agent.needs = advanceActionNeeds(
+        view.agent.needs,
+        seconds,
+        view.agent.currentState,
+      );
+      if (view.path.length) {
+        if(!view.surface && !view.transitDepth){
+          const others=[...this.views.values()].filter(v=>v!==view&&!v.surface).map(v=>({x:v.sprite.x,y:v.sprite.y}));
+          const next=view.path[0];
+          if(others.some(p=>Math.hypot(next.x-p.x,next.y-p.y)<20)){
+            if(this.elapsed>=(view.rerouteAt??0)){
+              const detour=findPath({x:view.sprite.x,y:view.sprite.y},view.destination,others);
+              if(detour.length)view.path=detour;
+              view.rerouteAt=this.elapsed+750;
+            }
+            continue;
+          }
+        }
+        const target = view.path[0],
+          dx = target.x - view.sprite.x,
+          dy = target.y - view.sprite.y,
+          distance = Math.hypot(dx, dy),
+          step = seconds * (this.reduced ? 17 : 30);
+        this.animate(
+          view,
+          Math.abs(dx) > Math.abs(dy)
+            ? dx > 0
+              ? "walk-right"
+              : "walk-left"
+            : dy > 0
+              ? "walk-down"
+              : "walk-up",
+        );
+        if (distance <= step) {
+          view.sprite.setPosition(target.x, target.y);
+          view.path.shift();
+          if(view.transitDepth)delete view.transitDepth;
+          if (!view.path.length) this.arrive(view);
+        } else
+          view.sprite.setPosition(
+            view.sprite.x + (dx / distance) * step,
+            view.sprite.y + (dy / distance) * step,
+          );
+      } else if (this.elapsed >= view.until) {
+        const action = chooseAction(
+          scoreActions(view.agent, {
+            hour: this.options.getHour?.() ?? hourNow(),
+            now: Date.now(),
+            elapsedInState: Date.now() - view.agent.lastStateAt,
+            occupiedZones: new Set(
+              [...this.views.values()].map((v) => v.agent.currentZone),
+            ),
+            recentActions: view.history,
+            randomJitter: Math.random(),
+          }),
+        );
+        this.requestAction(view, action);
+      }
+      view.sprite.setDepth(
+        view.transitDepth ?? (view.surface ? view.surface.y + 50 : view.sprite.y + 1),
+      );
+      view.label.setPosition(view.sprite.x, view.sprite.y - 28);
+    }
+    if (this.elapsed - this.savedAt > 1000) {
+      this.savedAt = this.elapsed;
+      this.applySky();
+      if (this.selectedId)
+        this.options.onCatSelected?.(this.views.get(this.selectedId)!.agent);
       this.options.onSnapshot?.(this.getAgents());
     }
   }
-
-  setReducedMotion(value: boolean): void {
-    this.reducedMotion = value;
+  selectCat(id: string): void {
+    const view = this.views.get(id);
+    if (!view) return;
+    this.selectedId = id;
+    for (const v of this.views.values()) v.label.setVisible(v === view);
+    this.options.onCatSelected?.(view.agent);
   }
-
+  setReducedMotion(value: boolean): void {
+    this.reduced = value;
+    for (const v of this.views.values())
+      v.sprite.anims.timeScale = value ? 0.6 : 1;
+  }
   handleInteraction(action: CatInteraction): boolean {
     const view = this.selectedId ? this.views.get(this.selectedId) : undefined;
     if (!view) return false;
     const now = Date.now();
-    const effects: Record<CatInteraction, Partial<CatAgent["needs"]>> = {
-      pet: { social: 0.12, comfort: 0.08 },
-      feed: { hunger: -0.3, energy: 0.05 },
-      play: { fun: 0.26, energy: -0.08 },
-      call: { social: -0.12 }
-    };
-    for (const [key, delta] of Object.entries(effects[action])) {
-      const need = key as keyof CatAgent["needs"];
-      view.agent.needs[need] = Math.min(1, Math.max(0, view.agent.needs[need] + Number(delta)));
+    if (now - view.agent.lastInteractionAt < 2500) {
+      this.options.onStatus?.(`${view.agent.name} needs a moment.`);
+      return false;
     }
-    view.agent.friendship = Math.min(1, view.agent.friendship + (action === "pet" ? 0.04 : 0.02));
+    if (
+      !this.requestAction(
+        view,
+        action === "feed"
+          ? "eat"
+          : action === "play"
+            ? "play"
+            : action === "call"
+              ? "meow"
+              : "react",
+        action === "call" ? "play" : undefined,
+      )
+    )
+      return false;
     view.agent.lastInteractionAt = now;
-    view.agent.lastStateAt = now;
-    if (action !== "call") view.agent.actionCooldowns[action] = now + 2_000;
-    this.setAction(view, action === "feed" ? "eat" : action === "call" ? "meow" : action === "play" ? "play" : "react", now);
-    this.options.onCatSelected?.(view.agent);
+    view.agent.friendship = Math.min(1, view.agent.friendship + 0.025);
+    if (action === "pet") {
+      view.agent.needs.social = Math.min(1, view.agent.needs.social + 0.1);
+      view.agent.needs.comfort = Math.min(1, view.agent.needs.comfort + 0.08);
+      view.label.setText(`${view.agent.name} ♥`);
+      this.time.delayedCall(1600, () => view.label.setText(view.agent.name));
+    }
     this.options.onInteraction?.(view.agent, action);
     return true;
   }
-
   getAgents(): Record<string, CatAgent> {
-    return Object.fromEntries([...this.views.entries()].map(([id, view]) => [id, view.agent]));
+    return Object.fromEntries([...this.views].map(([id, v]) => [id, v.agent]));
   }
-
-  private addCat(agent: CatAgent, index: number): void {
-    const point = ZONE_POINTS[agent.currentZone];
-    const sprite = this.add.sprite(point.x + index * 3, point.y, agent.spriteVariant, STATE_FRAMES[agent.currentState] ?? 0)
-      .setOrigin(0.5, 1)
-      .setScale(3.5)
-      .setTint(agent.tint)
-      .setDepth(10 + index)
-      .setInteractive({ useHandCursor: true });
-    const label = this.add.text(point.x, point.y - 60, agent.name, {
-      color: "#fff0d0",
-      fontFamily: "Courier New, monospace",
-      fontSize: "12px",
-      stroke: "#111728",
-      strokeThickness: 4
-    }).setOrigin(0.5, 1).setDepth(30);
-    sprite.on("pointerdown", () => {
-      this.selectedId = agent.id;
-      this.options.onCatSelected?.(agent);
-      this.options.onStatus?.(`${agent.name} is ${agent.currentState} near the ${agent.currentZone}.`);
-    });
-    this.views.set(agent.id, { agent, sprite, label });
+  private animate(view: View, clip: string): void {
+    view.sprite.play(`${view.agent.spriteVariant}/${clip}`, true);
+    view.sprite.anims.timeScale = this.reduced ? 0.6 : 1;
   }
-
-  private setAction(view: CatView, action: CatAction, now: number): void {
-    view.agent.currentState = action;
-    view.agent.lastStateAt = now;
-    view.sprite.setFrame(STATE_FRAMES[action] ?? 0);
-    if (action !== "walk") return;
-
-    const zone = WALK_ZONES[Math.floor(Math.random() * WALK_ZONES.length)];
-    const target = ZONE_POINTS[zone];
-    view.agent.targetZone = zone;
-    view.agent.currentZone = zone;
-    if (this.reducedMotion) {
-      view.sprite.setPosition(target.x, target.y);
-      view.label.setPosition(target.x, target.y - 60);
-      return;
+  private requestAction(
+    view: View,
+    action: CatAction,
+    explicitZone?: ZoneId,
+  ): boolean {
+    const zone =
+      explicitZone ??
+      (action === "eat"
+        ? "food"
+        : action === "play"
+          ? "play"
+          : action === "sleep"
+            ? "sofa"
+            : action === "observe"
+              ? Math.random() < 0.5
+                ? "window"
+                : "balcony"
+              : action === "walk"
+                ? (Object.keys(room.zones) as ZoneId[])[
+                    Math.floor(Math.random() * 9)
+                  ]
+                : undefined);
+    if (zone) {
+      const occupied = [...this.views.values()]
+        .filter((v) => v !== view)
+        .map((v) => v.destination);
+      const start = view.surface
+        ? view.destination
+        : { x: view.sprite.x, y: view.sprite.y };
+      const route = reserveDestination(zone, start, occupied);
+      if (!route) {
+        view.until = this.elapsed + 3000;
+        this.options.onStatus?.(
+          `${view.agent.name} is waiting for a free spot.`,
+        );
+        return false;
+      }
+      const descent = view.surface ? [view.destination] : [];
+      view.transitDepth = view.surface ? view.surface.y + 50 : undefined;
+      view.surface = undefined;
+      view.path = [...descent, ...route.path];
+      view.destination = route.point;
+      view.pending = action === "walk" ? "sit" : action;
+      view.agent.targetZone = zone;
+      view.agent.currentState = "walk";
+      if (!view.path.length) this.arrive(view);
+    } else {
+      if (view.surface && view.path.length) {
+        view.pending = action;
+        return true;
+      }
+      view.path = [];
+      if (!view.surface)
+        view.destination = { x: view.sprite.x, y: view.sprite.y };
+      delete view.agent.targetZone;
+      this.beginAction(view, action);
     }
-    this.tweens.add({
-      targets: view.sprite,
-      x: target.x,
-      y: target.y,
-      duration: 700 + Math.random() * 700,
-      ease: "Sine.easeInOut"
-    });
-    this.tweens.add({
-      targets: view.label,
-      x: target.x,
-      y: target.y - 60,
-      duration: 700 + Math.random() * 700,
-      ease: "Sine.easeInOut"
-    });
+    return true;
   }
-
-  private applySky(): void {
-    if (!this.sky) return;
-    const block = getTimeBlock(this.options.getHour?.() ?? currentHour());
-    this.sky.setTexture(SKY_KEYS[block]).setTint(SKY_TINTS[block]);
+  private arrive(view: View): void {
+    if (view.agent.targetZone) {
+      view.agent.currentZone = view.agent.targetZone;
+      delete view.agent.targetZone;
+      const furniture = room.objects.find(item=>item.zone===view.agent.currentZone);
+      const seat = furniture?.perches?.find(slot=>slot.approach[0]===view.destination.x&&slot.approach[1]===view.destination.y);
+      const perch = seat ? {x:seat.seat[0],y:seat.seat[1]} : undefined;
+      if (
+        perch &&
+        (view.pending === "sleep" || view.pending === "observe")
+      ) {
+        view.surface = perch;
+        view.path = [perch];
+        return;
+      }
+    }
+    this.beginAction(view, view.pending);
   }
-
+  private beginAction(view: View, action: CatAction): void {
+    view.agent.currentState = action;
+    view.agent.lastStateAt = Date.now();
+    view.history = [...view.history.slice(-3), action];
+    view.agent.actionCooldowns[action] = Date.now() + 5000;
+    view.until = this.elapsed + (DURATIONS[action] ?? 6500);
+    this.animate(view, action === "walk" ? "walk-down" : action);
+  }
+  private image(
+    frame: string,
+    x: number,
+    y: number,
+    depth: number,
+  ): Phaser.GameObjects.Image {
+    const data = atlas.frames[frame as keyof typeof atlas.frames];
+    return this.add
+      .image(x, y, data.texture, frame)
+      .setOrigin(0)
+      .setScale(2)
+      .setDepth(depth);
+  }
   private drawRoom(): void {
-    this.add.rectangle(WIDTH / 2, 401, WIDTH, 278, 0x28324e).setDepth(1);
-    this.add.rectangle(WIDTH / 2, 522, WIDTH, 36, 0x111728).setDepth(2);
-    this.add.rectangle(WIDTH / 2, 18, WIDTH, 36, 0x111728).setDepth(3);
-    this.add.rectangle(WIDTH / 2, 235, WIDTH - 32, 4, 0x9db8dc).setAlpha(0.8).setDepth(3);
-    this.add.rectangle(735, 280, 420, 112, 0x34415d).setAlpha(0.54).setDepth(2).setStrokeStyle(2, 0x8aa4cb);
-    this.add.rectangle(735, 338, 420, 8, 0x111728).setDepth(4);
-    for (let x = 550; x < 930; x += 54) this.add.rectangle(x, 306, 3, 70, 0x8097b5).setAlpha(0.55).setDepth(4);
-    for (let x = 18; x < WIDTH; x += 48) this.add.rectangle(x, 466, 2, 56, 0x394765).setDepth(3);
-
-    this.add.rectangle(188, 380, 222, 16, 0x9a6a56).setDepth(4).setStrokeStyle(2, 0x111728);
-    this.add.rectangle(194, 427, 12, 76, 0x614b4e).setDepth(3);
-    this.add.rectangle(380, 427, 12, 76, 0x614b4e).setDepth(3);
-    this.add.rectangle(186, 343, 72, 40, 0x202b4a).setDepth(5).setStrokeStyle(3, 0xffd766);
-    this.add.rectangle(222, 398, 24, 7, 0xffd766).setDepth(5);
-    this.add.rectangle(690, 394, 235, 55, 0x9b655c).setDepth(4).setStrokeStyle(2, 0x111728);
-    this.add.rectangle(676, 439, 12, 44, 0x614b4e).setDepth(3);
-    this.add.rectangle(906, 439, 12, 44, 0x614b4e).setDepth(3);
-    this.add.rectangle(54, 302, 38, 128, 0x7a5b66).setDepth(4).setStrokeStyle(2, 0x111728);
-    for (let y = 324; y < 416; y += 28) this.add.rectangle(54, y, 34, 4, 0xffd766).setAlpha(0.55).setDepth(5);
-    this.add.ellipse(352, 419, 82, 24, 0x32624f).setDepth(4);
-    this.add.ellipse(352, 390, 42, 75, 0x73b779).setDepth(5);
-    this.add.ellipse(350, 357, 22, 62, 0x9fddb0).setDepth(6).setAngle(-20);
-    this.add.rectangle(387, 219, 116, 50, 0xd7a267).setDepth(4).setStrokeStyle(2, 0x111728);
-    this.add.text(445, 244, "CV", { color: "#17213a", fontFamily: "Courier New, monospace", fontSize: "16px" }).setOrigin(0.5).setDepth(5);
-    this.add.rectangle(510, 438, 72, 13, 0xd7a267).setDepth(4).setStrokeStyle(2, 0x111728);
-    this.add.ellipse(510, 421, 38, 26, 0xff9c70).setDepth(5);
-    this.add.text(510, 423, "*", { color: "#111728", fontSize: "22px", fontFamily: "Courier New, monospace" }).setOrigin(0.5).setDepth(6);
+    this.cameras.main.setBackgroundColor("#382a26");
+    for (const tile of room.tiles)
+      for (let y = 0; y < tile.rows; y++)
+        for (let x = 0; x < tile.cols; x++)
+          this.image(tile.frame, tile.x + x * 32, tile.y + y * 32, tile.depth);
+    for (let family = 1; family <= 4; family++) {
+      const images: Phaser.GameObjects.Image[] = [];
+      const [x, y, w, h] = room.skyRect;
+      for (const [wx, wy, ww, wh] of room.skyWindows) {
+        for (let layer = 1; layer <= (family === 2 ? 5 : 4); layer++) {
+          const key = `sky-${family}-${layer}`;
+          const source = this.textures.get(key).get();
+          images.push(
+            this.add
+              .image(x + w / 2, y + h / 2, key)
+              .setDisplaySize(w, h)
+              .setDepth(1.5 + family * 0.01 + layer * 0.001)
+              .setCrop(
+                ((wx - x) * source.width) / w,
+                ((wy - y) * source.height) / h,
+                (ww * source.width) / w,
+                (wh * source.height) / h,
+              ),
+          );
+        }
+      }
+      this.skyLayers.set(family, images);
+    }
+    for (const [x, y, w, h] of room.beams)
+      this.image("beam", x, y, 3).setDisplaySize(w, h);
+    for (const item of room.objects) {
+      const sprite = this.image(item.frame, item.x, item.y, item.depth);
+      if (item.frame === "lamp") this.lamps.push(sprite);
+    }
+    this.lighting = this.add
+      .rectangle(320, 180, 640, 360, 0x17172f, 0)
+      .setDepth(950);
+    const glow = this.textures.createCanvas("lamp-glow", 128, 128);
+    if (glow) {
+      const ctx = glow.context,
+        gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      gradient.addColorStop(0, "rgba(255,181,88,.65)");
+      gradient.addColorStop(1, "rgba(255,181,88,0)");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 128, 128);
+      glow.refresh();
+      for (const lamp of this.lamps)
+        this.glows.push(
+          this.add
+            .image(lamp.x + 16, lamp.y + 24, "lamp-glow")
+            .setDepth(955)
+            .setBlendMode(Phaser.BlendModes.ADD),
+        );
+    }
   }
-}
-
-export function saveStateFromAgents(save: PortfolioSave, cats: Record<string, CatAgent>, now: number): PortfolioSave {
-  return {
-    ...save,
-    lastVisitAt: now,
-    cats: Object.fromEntries(
-      Object.entries(save.cats).map(([id, saved]) => {
-        const agent = cats[id];
-        if (!agent) return [id, saved];
-        const next: CatSaveState = {
-          ...saved,
-          needs: { ...agent.needs },
-          currentState: agent.currentState,
-          currentZone: agent.currentZone,
-          friendship: agent.friendship,
-          lastStateAt: agent.lastStateAt,
-          lastInteractionAt: agent.lastInteractionAt
-        };
-        return [id, next];
-      })
-    )
-  };
+  private applySky(): void {
+    const hour = (((this.options.getHour?.() ?? hourNow()) % 24) + 24) % 24;
+    let index = SKY_STOPS.findIndex(
+      (s, i) =>
+        i < SKY_STOPS.length - 1 &&
+        hour >= s.hour &&
+        hour < SKY_STOPS[i + 1].hour,
+    );
+    if (index < 0) index = 0;
+    const current = SKY_STOPS[index],
+      next = SKY_STOPS[index + 1];
+    const blend = Phaser.Math.Clamp((hour - (next.hour - 0.75)) / 0.75, 0, 1);
+    for (const [family, images] of this.skyLayers) {
+      const alpha =
+        current.sky === next.sky
+          ? family === current.sky
+            ? 1
+            : 0
+          : family === current.sky
+            ? 1 - blend
+            : family === next.sky
+              ? blend
+              : 0;
+      for (const image of images) image.setAlpha(alpha);
+    }
+    const tint = Phaser.Display.Color.Interpolate.ColorWithColor(
+      Phaser.Display.Color.ValueToColor(current.tint),
+      Phaser.Display.Color.ValueToColor(next.tint),
+      100,
+      blend * 100,
+    );
+    const color = Phaser.Display.Color.GetColor(tint.r, tint.g, tint.b);
+    this.children.list.forEach((object) => {
+      if (
+        object instanceof Phaser.GameObjects.Image &&
+        ![...this.skyLayers.values()].some((group) => group.includes(object))
+      )
+        object.setTint(color);
+    });
+    this.lighting?.setAlpha(
+      current.light + (next.light - current.light) * blend,
+    );
+    for (const glow of this.glows)
+      glow.setAlpha(
+        (current.light + (next.light - current.light) * blend) * 1.2,
+      );
+    for (const lamp of this.lamps) lamp.setTint(0xffe7ac).setDepth(960);
+    this.options.onTime?.(hour, getTimeBlock(hour));
+  }
 }

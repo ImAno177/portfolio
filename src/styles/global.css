@@ -463,3 +463,29 @@ footer a {
 html[data-motion="reduced"] * {
   transition: none !important;
 }
+
+/* Game shell: the room is the viewport, menus appear only on demand. */
+.site-shell{max-width:none;padding:0;min-height:100dvh}
+.room-stage{position:fixed;inset:0}
+.room-stage .room-viewport{width:100%;height:100dvh;max-height:none;aspect-ratio:auto;border:0;box-shadow:none;background:#211a16}
+.site-header{position:fixed;top:16px;left:16px;z-index:30;min-height:0;padding:0;border:0;display:block}
+.game-menu{position:relative;color:#f1e5d0}
+.game-menu summary{list-style:none;width:44px;height:44px;display:grid;place-items:center;background:#30231ee8;border:1px solid #a17b52;border-radius:5px;cursor:pointer}
+.game-menu summary::-webkit-details-marker{display:none}
+.game-menu svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.site-header nav{display:flex;flex-direction:column;gap:0;margin:8px 0 0;background:#30231ef5;min-width:180px;border-radius:5px}
+.site-header nav a,.site-header .text-toggle{display:block;padding:12px 18px;margin:0;font-size:14px;background:#30231ef5}
+.room-toolbar{position:fixed;right:16px;top:16px;z-index:30;padding:0;border:0;display:block}
+.settings-menu>summary{margin-left:auto}
+.room-buttons{position:absolute;right:0;top:52px;width:192px;padding:12px;display:flex;flex-direction:column;background:#30231ef5;border-radius:5px}
+.room-buttons button{font-size:13px;padding:10px;text-align:left}
+.room-buttons [data-room-time]{font-size:11px;padding:8px;color:#c4ab90}
+[data-room-status],.cat-controls .interaction-status{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.cat-controls{position:fixed;bottom:16px;left:16px;z-index:25;display:block;padding:0;margin:0}
+.cat-control-body{position:absolute;left:0;bottom:54px;width:300px;padding:16px;background:#30231ef5;border-radius:6px;display:grid;gap:12px}
+.cat-picker select{width:100%}.cat-controls [data-selected-cat]{font-size:12px}.cat-actions{justify-content:space-between}
+.portfolio-content{position:relative;z-index:20;background:#29221df7;margin:80px auto;padding:24px;max-width:min(800px,calc(100% - 32px));border-radius:8px}
+.site-shell footer,.content-section .eyebrow{display:none}
+.hotspot:before{opacity:0}.hotspot:hover:before,.hotspot:focus-visible:before,.show-places .hotspot:before{opacity:1}
+.room-stage:fullscreen{padding:0;display:block}.room-stage:fullscreen .room-viewport{max-height:none;height:100dvh}
+@media(max-width:600px){.site-header{left:10px;top:10px}.room-toolbar{right:10px;top:10px}.cat-controls{left:10px;bottom:10px}.cat-control-body{width:min(300px,calc(100vw - 20px))}}

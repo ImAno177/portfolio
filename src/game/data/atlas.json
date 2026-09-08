@@ -103,10 +103,10 @@
       "rect": [0, 48, 16, 16],
       "role": "GitHub desk notebook and pinned profile notes"
     },
-    "window": {
+    "door-post": {
       "texture": "doors",
-      "rect": [96, 48, 32, 32],
-      "role": "small right wall window"
+      "rect": [96, 0, 2, 48],
+      "role": "balcony doorway post cropped from existing door frame"
     }
   },
   "cats": {
@@ -127,7 +127,7 @@
       "meow": { "row": 28, "count": 3, "duration": 240 },
       "react": { "row": 32, "count": 8, "duration": 140 },
       "groom": { "row": 36, "count": 9, "duration": 160 },
-      "play": { "row": 44, "count": 8, "duration": 120 }
+      "play": { "row": 45, "count": 5, "duration": 120 }
     },
     "sourceNote": "Aseprite files are single-frame 352x1696 sheet documents, not timelines. Clip rows verified against the annotated cat sheet and Frame indexes.png. Annotated sheet has an 80px legend and is source-only."
   }
