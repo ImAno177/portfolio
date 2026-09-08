@@ -22,6 +22,24 @@ export async function runRoomChecks() {
   };
   await waitReady();
   let { scene, game } = window.__catRoom;
+  for (const id of ["fridge"]) {
+    const button = query(`[data-room-prop="${id}"]`);
+    const sprite = scene.fridge;
+    if (!button || !sprite) throw new Error(`Missing usable room prop: ${id}`);
+    const initial = sprite.frame.name;
+    button.click();
+    check(
+      `${id} uses its alternate artwork`,
+      button.getAttribute("aria-pressed") === "true" &&
+        sprite.frame.name !== initial,
+    );
+    button.click();
+    check(
+      `${id} returns to its original artwork`,
+      button.getAttribute("aria-pressed") === "false" &&
+        sprite.frame.name === initial,
+    );
+  }
   scene.applySky();
   check(
     "lighting preserves furniture occlusion depths",
@@ -74,8 +92,8 @@ export async function runRoomChecks() {
       v.path = [];
       v.surface = undefined;
       v.transitDepth = undefined;
-      v.sprite.setPosition(88, 216);
-      v.destination = { x: 88, y: 216 };
+      v.sprite.setPosition(240, 184);
+      v.destination = { x: 240, y: 184 };
       v.until = Infinity;
     }
   scene.requestAction(cat, "eat");
@@ -88,7 +106,7 @@ export async function runRoomChecks() {
     "interruption releases the reserved food slot",
     cat.destination.x === cat.sprite.x && cat.destination.y === cat.sprite.y,
   );
-  cat.sprite.setPosition(514, 326);
+  cat.sprite.setPosition(50, 198);
   scene.requestAction(cat, "eat");
   check(
     "same-cell destination is not immediate arrival",
@@ -97,8 +115,8 @@ export async function runRoomChecks() {
   scene.update(0, 1000);
   check(
     "arrival is exact before eating",
-    cat.sprite.x === 520 &&
-      cat.sprite.y === 328 &&
+    cat.sprite.x === 56 &&
+      cat.sprite.y === 200 &&
       cat.agent.currentState === "eat",
   );
   const hunger = cat.agent.needs.hunger;
@@ -144,13 +162,13 @@ export async function runRoomChecks() {
     v.surface = undefined;
     v.transitDepth = undefined;
     v.until = Infinity;
-    v.sprite.setPosition(72, 216);
-    v.destination = { x: 72, y: 216 };
+    v.sprite.setPosition(240, 184);
+    v.destination = { x: 240, y: 184 };
   }
   const sleepers = [scene.views.get("miso"), scene.views.get("luna")];
   sleepers.forEach((v, i) => {
-    v.sprite.setPosition(552 + i * 32, 312);
-    v.destination = { x: 552 + i * 32, y: 312 };
+    v.sprite.setPosition(552 + i * 32, 296);
+    v.destination = { x: 552 + i * 32, y: 296 };
     scene.requestAction(v, "sleep");
   });
   for (let i = 0; i < 30; i++) scene.update(0, 100);
@@ -160,13 +178,13 @@ export async function runRoomChecks() {
       (v, i) =>
         v.agent.currentState === "sleep" &&
         v.sprite.x === 552 + i * 32 &&
-        v.sprite.y === 284,
+        v.sprite.y === 268,
     ),
   );
   scene.requestAction(sleepers[0], "meow", "play");
   check(
     "leaving sofa first descends to its floor approach",
-    sleepers[0].path[0].x === 552 && sleepers[0].path[0].y === 312,
+    sleepers[0].path[0].x === 552 && sleepers[0].path[0].y === 296,
   );
   for (let i = 0; i < 300 && sleepers[0].agent.currentState === "walk"; i++)
     scene.update(0, 100);

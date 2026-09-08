@@ -3,6 +3,7 @@ import { CatRoomScene } from "./room-scene";
 import type { CatInteraction, RoomSceneOptions } from "./room-scene";
 
 export interface CatRoomHandle {
+  toggleFridge(): boolean | undefined;
   select(id: string): void;
   interact(action: CatInteraction): boolean;
   setReducedMotion(value: boolean): void;
@@ -55,6 +56,7 @@ export function mountCatRoom(
     });
     return {
       select: (id) => scene.selectCat(id),
+      toggleFridge: () => scene.toggleFridge(),
       interact: (action) => scene.handleInteraction(action),
       setReducedMotion: (value) => scene.setReducedMotion(value),
       pause: () => {

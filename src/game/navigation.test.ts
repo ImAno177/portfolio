@@ -8,31 +8,33 @@ import {
 import room from "./data/room.json";
 import type { ZoneId } from "./types";
 describe("shared room navigation", () => {
-  it('enters the balcony through the doorway, never through its railing',()=>{
-    expect(walkable({x:456,y:184})).toBe(false);
-    expect(walkable({x:280,y:152})).toBe(false);
-    const path=findPath({x:456,y:216},{x:456,y:168});
-    expect(path).toContainEqual({x:424,y:184});
+  it("enters the balcony through the doorway, never through its railing", () => {
+    expect(walkable({ x: 472, y: 184 })).toBe(false);
+    expect(walkable({ x: 280, y: 152 })).toBe(false);
+    const path = findPath({ x: 472, y: 216 }, { x: 472, y: 168 });
+    expect(path).toContainEqual({ x: 456, y: 184 });
   });
-  it('routes around another cat instead of stacking on its cell',()=>{
-    const path=findPath({x:312,y:328},{x:376,y:328},[{x:344,y:328}]);
+  it("routes around another cat instead of stacking on its cell", () => {
+    const path = findPath({ x: 312, y: 328 }, { x: 376, y: 328 }, [
+      { x: 344, y: 328 },
+    ]);
     expect(path.length).toBeGreaterThan(4);
-    expect(path).not.toContainEqual({x:344,y:328});
+    expect(path).not.toContainEqual({ x: 344, y: 328 });
   });
-  it('every sofa slot has a distinct seat inside the sofa artwork',()=>{
-    const sofa=room.objects.find(item=>item.id==='sofa')!;
+  it("every sofa slot has a distinct seat inside the sofa artwork", () => {
+    const sofa = room.objects.find((item) => item.id === "sofa")!;
     expect(sofa.perches?.length).toBe(room.zones.sofa.length);
-    for(const slot of sofa.perches!){
-      expect(walkable({x:slot.approach[0],y:slot.approach[1]})).toBe(true);
+    for (const slot of sofa.perches!) {
+      expect(walkable({ x: slot.approach[0], y: slot.approach[1] })).toBe(true);
       expect(slot.seat[0]).toBeGreaterThan(sofa.x);
-      expect(slot.seat[0]).toBeLessThan(sofa.x+96);
-      expect(slot.seat[1]).toBeGreaterThan(sofa.y+32);
-      expect(slot.seat[1]).toBeLessThan(sofa.y+64);
+      expect(slot.seat[0]).toBeLessThan(sofa.x + 96);
+      expect(slot.seat[1]).toBeGreaterThan(sofa.y + 32);
+      expect(slot.seat[1]).toBeLessThan(sofa.y + 64);
     }
   });
   it("finishes the final pixels within the destination cell", () => {
-    expect(reserveDestination("food", { x: 514, y: 326 }, [])?.path).toEqual([
-      { x: 520, y: 328 },
+    expect(reserveDestination("food", { x: 50, y: 198 }, [])?.path).toEqual([
+      { x: 56, y: 200 },
     ]);
   });
   it("every zone is reachable without crossing furniture", () => {
@@ -59,7 +61,7 @@ describe("shared room navigation", () => {
     ).toBeUndefined();
   });
   it("rejects furniture and off-world destinations", () => {
-    expect(findPath({ x: 312, y: 328 }, { x: 168, y: 248 })).toEqual([]);
+    expect(findPath({ x: 312, y: 328 }, { x: 328, y: 200 })).toEqual([]);
     expect(findPath({ x: 312, y: 328 }, { x: -8, y: 328 })).toEqual([]);
   });
 });

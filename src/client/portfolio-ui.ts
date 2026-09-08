@@ -24,6 +24,9 @@ export function setupPortfolioUI(): void {
     "[data-motion-toggle]",
   )!;
   const retry = document.querySelector<HTMLButtonElement>("[data-retry]")!;
+  const fridgeButton = document.querySelector<HTMLButtonElement>(
+    '[data-room-prop="fridge"]',
+  )!;
   let storage: Storage | undefined;
   try {
     storage = window.localStorage;
@@ -187,12 +190,24 @@ export function setupPortfolioUI(): void {
     else room?.resume();
     pauseButton.textContent = paused ? "Resume room" : "Pause room";
     pauseButton.setAttribute("aria-pressed", String(paused));
+    fridgeButton.disabled =
+      paused || unavailable || root!.dataset.phaser !== "ready";
     if (selected) selectedCat(selected);
   }
   pauseButton.addEventListener("click", () => {
     paused = !paused;
     snapshot();
     syncPause();
+  });
+  fridgeButton.addEventListener("click", () => {
+    if (paused || unavailable) return;
+    const open = room?.toggleFridge();
+    if (open === undefined) return;
+    fridgeButton.setAttribute("aria-pressed", String(open));
+    fridgeButton.setAttribute(
+      "aria-label",
+      open ? "Close refrigerator" : "Open refrigerator",
+    );
   });
   function syncMotion() {
     motionButton.setAttribute("aria-pressed", String(reduced));
@@ -262,6 +277,7 @@ export function setupPortfolioUI(): void {
       : d.getHours() + d.getMinutes() / 60;
   };
   function fail(message: string) {
+    fridgeButton.disabled = true;
     const settings =
       document.querySelector<HTMLDetailsElement>(".settings-menu");
     if (settings) settings.open = true;
@@ -278,6 +294,9 @@ export function setupPortfolioUI(): void {
     status(message);
   }
   async function start() {
+    fridgeButton.disabled = true;
+    fridgeButton.setAttribute("aria-pressed", "false");
+    fridgeButton.setAttribute("aria-label", "Open refrigerator");
     const current = ++generation;
     snapshot();
     selected = undefined;

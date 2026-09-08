@@ -2,226 +2,417 @@
   "width": 640,
   "height": 360,
   "scale": 2,
-  "skyRect": [64, -40, 544, 306],
-  "barriers": [[432,176,176,16]],
+  "skyRect": [128, -40, 512, 288],
+  "walkableAreas": [
+    [8, 160, 624, 184],
+    [432, 144, 176, 16]
+  ],
+  "barriers": [
+    [400, 144, 32, 48],
+    [464, 176, 144, 16],
+    [0, 208, 192, 96],
+    [480, 208, 160, 64]
+  ],
   "skyWindows": [
-    [64, 16, 304, 128],
-    [400, 32, 208, 112]
+    [280, 24, 120, 112],
+    [432, 32, 176, 112]
   ],
   "tiles": [
-    { "frame": "wall", "x": 0, "y": 0, "cols": 20, "rows": 5, "depth": 1 },
-    { "frame": "floor", "x": 0, "y": 160, "cols": 20, "rows": 6, "depth": 2 },
-    { "frame": "floor", "x": 400, "y": 128, "cols": 7, "rows": 2, "depth": 2 },
-    { "frame": "beam", "x": 0, "y": 0, "cols": 20, "rows": 1, "depth": 3 },
-    { "frame": "beam", "x": 0, "y": 352, "cols": 20, "rows": 1, "depth": 900 },
+    {
+      "frame": "wall",
+      "x": 0,
+      "y": 0,
+      "cols": 20,
+      "rows": 5,
+      "depth": 1
+    },
+    {
+      "frame": "floor",
+      "x": 0,
+      "y": 160,
+      "cols": 20,
+      "rows": 6,
+      "depth": 2
+    },
+    {
+      "frame": "kitchen-floor",
+      "x": 0,
+      "y": 160,
+      "cols": 9,
+      "rows": 2,
+      "depth": 2.1
+    },
+    {
+      "frame": "floor",
+      "x": 432,
+      "y": 128,
+      "cols": 6,
+      "rows": 2,
+      "depth": 2
+    },
+    {
+      "frame": "beam",
+      "x": 0,
+      "y": 0,
+      "cols": 20,
+      "rows": 1,
+      "depth": 3
+    },
+    {
+      "frame": "beam",
+      "x": 0,
+      "y": 352,
+      "cols": 20,
+      "rows": 1,
+      "depth": 900
+    },
     {
       "frame": "rug-fill",
-      "x": 256,
-      "y": 248,
-      "cols": 6,
+      "x": 352,
+      "y": 240,
+      "cols": 8,
       "rows": 3,
       "depth": 4
+    },
+    {
+      "frame": "wall",
+      "x": 0,
+      "y": 208,
+      "cols": 6,
+      "rows": 3,
+      "depth": 5
+    },
+    {
+      "frame": "wall",
+      "x": 480,
+      "y": 208,
+      "cols": 5,
+      "rows": 2,
+      "depth": 5
     }
   ],
   "beams": [
-    [60, 16, 4, 144],
-    [164, 16, 4, 128],
-    [264, 16, 4, 128],
-    [368, 0, 8, 192],
-    [64, 80, 304, 4],
-    [64, 144, 304, 8],
-    [396, 16, 4, 160],
-    [608, 16, 8, 160],
-    [400, 24, 208, 8],
-    [400, 136, 208, 6],
-    [432, 176, 176, 6],
-    [428, 140, 4, 36],
-    [460, 140, 4, 36],
-    [492, 140, 4, 36],
-    [524, 140, 4, 36],
-    [556, 140, 4, 36],
-    [588, 140, 4, 36]
+    [276, 24, 4, 136],
+    [340, 24, 4, 112],
+    [280, 80, 120, 4],
+    [280, 136, 120, 8],
+    [400, 0, 8, 192],
+    [428, 16, 4, 176],
+    [608, 16, 8, 176],
+    [432, 24, 176, 8],
+    [432, 136, 176, 6],
+    [464, 176, 144, 6],
+    [464, 140, 4, 36],
+    [496, 140, 4, 36],
+    [528, 140, 4, 36],
+    [560, 140, 4, 36],
+    [592, 140, 4, 36],
+    [0, 208, 192, 4],
+    [188, 208, 4, 96],
+    [480, 208, 160, 4]
   ],
   "objects": [
     {
-      "id": "shelf",
-      "frame": "shelf",
-      "x": 4,
-      "y": 80,
-      "footprint": [0, 160, 96, 16],
-      "zone": "bookshelf",
-      "depth": 208
+      "id": "fridge",
+      "frame": "fridge",
+      "x": 16,
+      "y": 32,
+      "depth": 160,
+      "footprint": [16, 144, 64, 16]
     },
-    { "id": "books", "frame": "books", "x": 4, "y": 0, "depth": 100 },
+    {
+      "id": "stove",
+      "frame": "stove",
+      "x": 208,
+      "y": 64,
+      "depth": 160,
+      "footprint": [208, 144, 64, 16]
+    },
+    {
+      "id": "sink",
+      "frame": "sink",
+      "x": 80,
+      "y": 64,
+      "depth": 160,
+      "footprint": [80, 144, 64, 16]
+    },
+    {
+      "id": "kitchen-counter",
+      "frame": "counter",
+      "x": 144,
+      "y": 64,
+      "depth": 160,
+      "footprint": [144, 144, 64, 16]
+    },
     {
       "id": "desk",
       "frame": "desk",
-      "x": 112,
-      "y": 136,
-      "footprint": [112, 160, 96, 32],
-      "zone": "desk",
-      "depth": 192
+      "x": 288,
+      "y": 104,
+      "depth": 168,
+      "footprint": [288, 144, 96, 24],
+      "zone": "desk"
     },
     {
       "id": "chair",
       "frame": "chair",
-      "x": 152,
-      "y": 192,
-      "footprint": [160, 224, 48, 48],
-      "depth": 272
+      "x": 320,
+      "y": 144,
+      "depth": 208,
+      "footprint": [320, 192, 32, 16]
     },
-    { "id": "sofa-rug", "frame": "runner", "x": 544, "y": 240, "depth": 4 },
+    {
+      "id": "notebook",
+      "frame": "notebook",
+      "x": 328,
+      "y": 104,
+      "depth": 170
+    },
+    {
+      "id": "lamp-a",
+      "frame": "lamp",
+      "x": 288,
+      "y": 72,
+      "depth": 169
+    },
+    {
+      "id": "shelf",
+      "frame": "shelf",
+      "x": 16,
+      "y": 224,
+      "depth": 320,
+      "footprint": [16, 304, 96, 16],
+      "zone": "bookshelf"
+    },
+    {
+      "id": "clock",
+      "frame": "clock",
+      "x": 112,
+      "y": 224,
+      "depth": 320,
+      "footprint": [112, 304, 32, 16]
+    },
+    {
+      "id": "dining-table",
+      "frame": "desk",
+      "x": 192,
+      "y": 224,
+      "depth": 288,
+      "footprint": [192, 272, 96, 16]
+    },
+    {
+      "id": "dining-chair-back",
+      "frame": "chair",
+      "x": 224,
+      "y": 208,
+      "depth": 272,
+      "footprint": [224, 256, 32, 16]
+    },
+    {
+      "id": "dining-chair",
+      "frame": "chair",
+      "x": 224,
+      "y": 272,
+      "depth": 336,
+      "footprint": [224, 320, 32, 16]
+    },
+    {
+      "id": "profile-picture",
+      "frame": "picture",
+      "x": 112,
+      "y": 16,
+      "depth": 4
+    },
+    {
+      "id": "sofa-rug",
+      "frame": "runner",
+      "x": 544,
+      "y": 240,
+      "depth": 4
+    },
     {
       "id": "sofa",
       "frame": "sofa",
       "x": 528,
-      "y": 240,
-      "footprint": [528, 256, 96, 48],
+      "y": 224,
+      "depth": 288,
+      "footprint": [528, 240, 96, 48],
       "zone": "sofa",
-      "perches": [{"approach":[552,312],"seat":[552,284]},{"approach":[584,312],"seat":[584,284]}],
-      "depth": 304
+      "perches": [
+        {
+          "approach": [552, 296],
+          "seat": [552, 268]
+        },
+        {
+          "approach": [584, 296],
+          "seat": [584, 268]
+        }
+      ]
+    },
+    {
+      "id": "sofa-table",
+      "frame": "table",
+      "x": 480,
+      "y": 224,
+      "depth": 288,
+      "footprint": [480, 256, 32, 32]
+    },
+    {
+      "id": "lamp-b",
+      "frame": "lamp",
+      "x": 480,
+      "y": 180,
+      "depth": 290
     },
     {
       "id": "balcony-chair",
       "frame": "armchair",
       "x": 544,
       "y": 112,
-      "footprint": [544, 144, 64, 32],
-      "depth": 176
+      "depth": 176,
+      "footprint": [544, 144, 64, 32]
     },
     {
       "id": "coffee-table",
       "frame": "table",
       "x": 496,
       "y": 112,
-      "footprint": [496, 144, 32, 32],
-      "depth": 176
+      "depth": 176,
+      "footprint": [496, 144, 32, 32]
     },
     {
-      "id": "plant-a",
+      "id": "plant-balcony",
       "frame": "plant",
-      "x": 72,
-      "y": 128,
-      "footprint": [80, 176, 16, 16],
-      "depth": 192
+      "x": 592,
+      "y": 64,
+      "depth": 128,
+      "footprint": [592, 112, 32, 16]
     },
     {
-      "id": "plant-b",
-      "frame": "plant",
-      "x": 224,
-      "y": 128,
-      "footprint": [224, 176, 32, 16],
-      "zone": "plants",
-      "depth": 192
-    },
-    {
-      "id": "plant-c",
-      "frame": "plant",
-      "x": 352,
-      "y": 144,
-      "footprint": [352, 192, 32, 16],
-      "depth": 208
-    },
-    {
-      "id": "plant-d",
+      "id": "plant-door",
       "frame": "plant",
       "x": 432,
       "y": 96,
-      "footprint": [432, 144, 16, 16],
-      "depth": 160
+      "depth": 160,
+      "footprint": [432, 144, 16, 16]
     },
     {
-      "id": "plant-e",
+      "id": "plant-office",
       "frame": "plant",
-      "x": 592,
-      "y": 80,
-      "footprint": [592, 128, 32, 16],
-      "depth": 144
+      "x": 368,
+      "y": 176,
+      "depth": 240,
+      "footprint": [368, 224, 32, 16],
+      "zone": "plants"
     },
     {
-      "id": "plant-f",
+      "id": "plant-lounge",
       "frame": "plant",
       "x": 608,
+      "y": 288,
+      "depth": 352,
+      "footprint": [608, 336, 32, 16]
+    },
+    {
+      "id": "food",
+      "frame": "bowl",
+      "x": 48,
+      "y": 176,
+      "depth": 5
+    },
+    {
+      "id": "water",
+      "frame": "water",
+      "x": 80,
+      "y": 176,
+      "depth": 5
+    },
+    {
+      "id": "toy",
+      "frame": "toy",
+      "x": 352,
       "y": 272,
-      "footprint": [608, 320, 32, 16],
-      "depth": 336
+      "depth": 6
     },
     {
-      "id": "plant-g",
-      "frame": "plant",
-      "x": 16,
-      "y": 272,
-      "footprint": [16, 320, 32, 16],
-      "depth": 336
-    },
-    {
-      "id": "plant-h",
-      "frame": "plant",
-      "x": 472,
-      "y": 256,
-      "footprint": [480, 304, 16, 16],
-      "depth": 320
-    },
-    { "id": "board", "frame": "board", "x": 608, "y": 16, "depth": 120 },
-    {
-      "id": "balcony-door-post",
-      "frame": "door-post",
-      "x": 396,
-      "y": 80,
-      "depth": 3
-    },
-    { "id": "food", "frame": "bowl", "x": 512, "y": 304, "depth": 5 },
-    { "id": "water", "frame": "bowl", "x": 544, "y": 304, "depth": 5 },
-    { "id": "toy", "frame": "toy", "x": 352, "y": 272, "depth": 6 },
-    { "id": "notebook", "frame": "notebook", "x": 176, "y": 128, "depth": 194 },
-    { "id": "pinned-note", "frame": "notebook", "x": 608, "y": 48, "depth": 121 },
-    { "id": "lamp-a", "frame": "lamp", "x": 208, "y": 120, "depth": 194 },
-    { "id": "lamp-b", "frame": "lamp", "x": 584, "y": 208, "depth": 305 }
+      "id": "tea-table",
+      "frame": "low-table",
+      "x": 544,
+      "y": 304,
+      "depth": 352,
+      "footprint": [544, 336, 48, 16]
+    }
   ],
   "hotspots": [
-    { "id": "research", "label": "Bookshelf · Research", "x": 42, "y": 122 },
-    { "id": "projects", "label": "Desk · Projects", "x": 156, "y": 157 },
-    { "id": "about", "label": "Window · About", "x": 274, "y": 92 },
-    { "id": "cv", "label": "Notice board · CV", "x": 624, "y": 76 },
-    { "id": "contact", "label": "Coffee · Contact", "x": 514, "y": 132 }
+    {
+      "id": "research",
+      "label": "Bookshelf · Research",
+      "x": 64,
+      "y": 266
+    },
+    {
+      "id": "projects",
+      "label": "Desk · Projects",
+      "x": 370,
+      "y": 130
+    },
+    {
+      "id": "about",
+      "label": "Window · About",
+      "x": 368,
+      "y": 60
+    },
+    {
+      "id": "cv",
+      "label": "Profile picture · CV",
+      "x": 128,
+      "y": 32
+    },
+    {
+      "id": "contact",
+      "label": "Dining table · Contact",
+      "x": 224,
+      "y": 246
+    }
   ],
+  "githubSpot": [344, 120],
   "zones": {
     "desk": [
-      [120, 216],
-      [136, 216]
+      [280, 184],
+      [296, 184]
     ],
     "bookshelf": [
-      [72, 216],
-      [88, 216]
+      [56, 328],
+      [88, 328]
     ],
     "sofa": [
-      [552, 312],
-      [584, 312]
+      [552, 296],
+      [584, 296]
     ],
     "food": [
-      [520, 328],
-      [552, 328]
+      [56, 200],
+      [88, 200]
     ],
     "play": [
       [360, 312],
       [376, 312],
-      [344, 312]
+      [392, 312]
     ],
     "plants": [
-      [248, 216],
-      [264, 216]
+      [360, 216],
+      [376, 216]
     ],
     "window": [
-      [280, 168],
-      [312, 168]
+      [312, 184],
+      [328, 184]
     ],
     "balcony": [
-      [456, 168],
-      [472, 168]
+      [472, 168],
+      [488, 168]
     ],
     "board": [
-      [600, 216],
-      [584, 216]
+      [136, 184],
+      [152, 184]
     ]
   }
 }

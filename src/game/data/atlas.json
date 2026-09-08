@@ -45,8 +45,8 @@
     },
     "chair": {
       "texture": "furniture",
-      "rect": [176, 112, 32, 48],
-      "role": "desk armchair"
+      "rect": [128, 0, 16, 32],
+      "role": "upright wooden desk chair"
     },
     "armchair": {
       "texture": "furniture2",
@@ -78,10 +78,10 @@
       "rect": [168, 64, 32, 48],
       "role": "sofa rug"
     },
-    "board": {
-      "texture": "furniture",
-      "rect": [32, 112, 16, 48],
-      "role": "profile notice board"
+    "picture": {
+      "texture": "items",
+      "rect": [0, 16, 16, 16],
+      "role": "framed profile picture on the solid left wall"
     },
     "lamp": {
       "texture": "furniture",
@@ -107,6 +107,56 @@
       "texture": "doors",
       "rect": [96, 0, 2, 48],
       "role": "balcony doorway post cropped from existing door frame"
+    },
+    "fridge": {
+      "texture": "furniture",
+      "rect": [32, 192, 32, 64],
+      "role": "kitchen refrigerator"
+    },
+    "stove": {
+      "texture": "furniture",
+      "rect": [64, 192, 32, 48],
+      "role": "kitchen cooker and oven"
+    },
+    "sink": {
+      "texture": "furniture",
+      "rect": [96, 192, 32, 48],
+      "role": "kitchen sink cabinet"
+    },
+    "counter": {
+      "texture": "furniture",
+      "rect": [128, 192, 32, 48],
+      "role": "kitchen preparation counter and drawers"
+    },
+    "fireplace": {
+      "texture": "furniture",
+      "rect": [144, 112, 32, 48],
+      "role": "living room wood stove and chimney"
+    },
+    "clock": {
+      "texture": "furniture",
+      "rect": [64, 112, 32, 48],
+      "role": "reading corner grandfather clock"
+    },
+    "kitchen-floor": {
+      "texture": "tiles",
+      "rect": [84, 84, 16, 16],
+      "role": "tile floor defining the kitchen aisle"
+    },
+    "water": {
+      "texture": "items",
+      "rect": [0, 64, 16, 16],
+      "role": "empty water dish distinct from food"
+    },
+    "low-table": {
+      "texture": "furniture",
+      "rect": [84, 40, 24, 24],
+      "role": "low tea table in front of the sofa"
+    },
+    "fridge-open": {
+      "texture": "furniture2",
+      "rect": [32, 192, 32, 64],
+      "role": "open refrigerator state controlled by a room button"
     }
   },
   "cats": {
@@ -115,19 +165,72 @@
     "origin": [0.5, 0.75],
     "textures": ["cat-1", "cat-1-6", "cat-1-9"],
     "clips": {
-      "idle": { "row": 0, "count": 1, "duration": 600 },
-      "sit": { "row": 0, "count": 1, "duration": 600 },
-      "observe": { "row": 0, "start": 1, "count": 1, "duration": 600 },
-      "walk-down": { "row": 4, "count": 4, "duration": 140 },
-      "walk-up": { "row": 5, "count": 4, "duration": 140 },
-      "walk-right": { "row": 6, "count": 8, "duration": 110 },
-      "walk-left": { "row": 7, "count": 8, "duration": 110 },
-      "sleep": { "row": 12, "count": 2, "duration": 800 },
-      "eat": { "row": 21, "count": 8, "duration": 180 },
-      "meow": { "row": 28, "count": 3, "duration": 240 },
-      "react": { "row": 32, "count": 8, "duration": 140 },
-      "groom": { "row": 36, "count": 9, "duration": 160 },
-      "play": { "row": 45, "count": 5, "duration": 120 }
+      "idle": {
+        "row": 0,
+        "count": 1,
+        "duration": 600
+      },
+      "sit": {
+        "row": 0,
+        "count": 1,
+        "duration": 600
+      },
+      "observe": {
+        "row": 0,
+        "start": 1,
+        "count": 1,
+        "duration": 600
+      },
+      "walk-down": {
+        "row": 4,
+        "count": 4,
+        "duration": 140
+      },
+      "walk-up": {
+        "row": 5,
+        "count": 4,
+        "duration": 140
+      },
+      "walk-right": {
+        "row": 6,
+        "count": 8,
+        "duration": 110
+      },
+      "walk-left": {
+        "row": 7,
+        "count": 8,
+        "duration": 110
+      },
+      "sleep": {
+        "row": 12,
+        "count": 2,
+        "duration": 800
+      },
+      "eat": {
+        "row": 21,
+        "count": 8,
+        "duration": 180
+      },
+      "meow": {
+        "row": 28,
+        "count": 3,
+        "duration": 240
+      },
+      "react": {
+        "row": 32,
+        "count": 8,
+        "duration": 140
+      },
+      "groom": {
+        "row": 36,
+        "count": 9,
+        "duration": 160
+      },
+      "play": {
+        "row": 45,
+        "count": 5,
+        "duration": 120
+      }
     },
     "sourceNote": "Aseprite files are single-frame 352x1696 sheet documents, not timelines. Clip rows verified against the annotated cat sheet and Frame indexes.png. Annotated sheet has an 80px legend and is source-only."
   }

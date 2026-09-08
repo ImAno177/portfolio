@@ -5,6 +5,7 @@ import room from '../game/data/room.json';
 import {CAT_SEEDS} from '../game/data/cats';
 const base=import.meta.env.BASE_URL;
 const links=['about','projects','research','cv','contact'];
+const fridge=room.objects.find(item=>item.id==='fridge')!;
 ---
 <Layout title={`${profile.name} — a room with a view`} description={profile.summary}>
  <a class="skip-link" href="#about">Skip to portfolio</a>
@@ -18,11 +19,12 @@ const links=['about','projects','research','cv','contact'];
   <main id="home">
    <section class="room-stage" aria-label="Interactive pixel-art cat room">
     <div class="room-viewport" data-room-viewport>
-     <img class="room-fallback" src={`${base}assets/room/fallback.png`} width="640" height="360" alt="A pixel-art studio with a bookshelf and desk on the left, a sky-facing balcony, a central rug and a sofa on the right." />
+     <img class="room-fallback" src={`${base}assets/room/fallback.png`} width="640" height="360" alt="A pixel-art studio apartment with a complete kitchen, dining table, wall-backed reading nook, window desk, covered balcony and sofa with separate lamp and tea tables." />
      <div class="cat-room" data-cat-room-root></div>
      <div class="hotspot-layer" aria-label="Objects in the room">
+      <button class="hotspot" data-room-prop="fridge" data-world-x={fridge.x+32} data-world-y={fridge.y+80} aria-label="Open refrigerator" aria-pressed="false" disabled><span>Refrigerator</span></button>
       {room.hotspots.map(spot=><a class="hotspot" href={`#${spot.id}`} data-world-x={spot.x} data-world-y={spot.y} style={`left:${spot.x/6.4}%;top:${spot.y/3.6}%`} aria-label={spot.label}><span>{spot.label}</span></a>)}
-      <a class="hotspot" href={profile.github} target="_blank" rel="noreferrer" data-world-x="188" data-world-y="148" style="left:29.375%;top:41.111%" aria-label="Desk notebook · GitHub"><span>GitHub ↗</span></a>
+      <a class="hotspot" href={profile.github} target="_blank" rel="noreferrer" data-world-x={room.githubSpot[0]} data-world-y={room.githubSpot[1]} style={`left:${room.githubSpot[0]/6.4}%;top:${room.githubSpot[1]/3.6}%`} aria-label="Desk notebook · GitHub"><span>GitHub ↗</span></a>
      </div>
     </div>
     <div class="room-toolbar">

@@ -109,6 +109,8 @@ The palette is warm and low-luminance; the existing art carries most of the colo
 
 ## Layout
 
+The studio layout groups the kitchen along the back-left wall in fridge, sink, preparation and cooking order. Dining sits next to that kitchen; the reading nook and lounge are backed by explicit wall volumes. The window workstation and covered balcony occupy the upper-right. Preserve the clear central aisle, chair-to-table alignment, separate lamp support and floor-to-cushion approach links when moving furniture. A source sprite being available does not justify an unsupported placement: the freestanding fireplace is omitted until a credible wall/flue position exists.
+
 The shell removes the desktop-page container and fills the viewport: `.site-shell` is full-width with a minimum height of `100dvh`, `.room-stage` is fixed to the viewport, and `.room-viewport` fills it. The room art is a 640x360 world rendered with pixelated edges and contain/FIT sizing, so the complete room remains visible and mobile viewports letterbox rather than crop or stretch it.
 
 The portfolio's persistent visual layer is the room only. The portfolio menu is a native `details` control at the upper-left, room settings are at the upper-right, and cat controls are at the lower-left; these controls appear on demand. The DOM content is hash-addressable at `#about`, `#projects`, `#research`, `#cv`, and `#contact`, with `#text` as the text-view entry point. The content panel is capped at 800px in the page flow and the dialog is a right-side 470px maximum panel; narrow screens use 10px corner offsets and an 8px dialog inset.

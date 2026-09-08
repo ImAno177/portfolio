@@ -1,5 +1,21 @@
 # Cat Room repair verification
 
+## Studio layout revision — current worktree
+
+This revision supersedes the spatial approval below. The user correctly identified that earlier checks missed illogical placement: a lamp on sofa seating, stacked bookcases over glass, and a cabinet-side crop mislabeled as a notice board. Passing the old checks was not sufficient visual acceptance.
+
+- Branch: `fix/room-layout-v2`, based on local main `cd4913c`.
+- Kitchen follows fridge, sink, preparation counter, cooker; the dining chairs share the table axis, outside the central aisle.
+- Bookcase/clock and sofa now have visible backing walls with matching navigation barriers. The unsupported freestanding fireplace is omitted from the scene; its source artwork is preserved.
+- Sofa approaches are (552,296) and (584,296); cushion feet are (552,268) and (584,268). Lamp rests on its own side table; a separate low tea table sits in front.
+- Refrigerator can open/close using supplied alternate artwork through a native keyboard-accessible button. It is disabled while paused/loading/failed and resets on room retry.
+- Walkable floor areas, walls, furniture footprints, zones and link positions are defined by room data. The fallback is regenerated from that same scene.
+- Fresh checks: 29 logic tests, 23 browser assertions, 30 atlas frames and 186 cat animation references; Astro check/build pass (Phaser chunk-size warning remains).
+- 30-second observation of all six cats covered 53 animation frames and found no grounded feet in blocked floor cells. This does not by itself prove all spatial or animation quality.
+- Current desktop static morning and mobile night renders inspected; mobile remains 16:9 without horizontal overflow. A new independent spatial review is pending. No merge, push or deploy of this revision yet.
+
+## Earlier revision history — not current studio approval
+
 ## Latest brief
 
 The room is a browser-game screen, not a canvas framed by a portfolio landing page. Normal play shows three icon-only menus. Portfolio prose remains in accessible HTML panels and the optional text view.

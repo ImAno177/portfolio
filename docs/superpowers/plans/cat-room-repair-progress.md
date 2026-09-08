@@ -1,5 +1,7 @@
 # Cat Room repair — approved implementation
 
+Current follow-up: `fix/room-layout-v2` rebuilds the room as the user-approved studio. See `docs/review/cat-room/review.md` for current evidence. The previous spatial approval below was superseded by user-reported furniture placement defects; it must not be reused as acceptance of the new room. The studio revision is not merged or deployed.
+
 Branch: `fix/asset-cat-room`; baseline `759d1fb`. GitHub profile out of scope.
 
 1. Atlas: implemented. Verified 352×1696 cat sheets, 32px cells, 11 columns. Aseprite contains a single sheet frame without animation tags; annotated sheet supplies clip mapping. 20 interior frames and 186 animation references pass bounds/alpha validation.

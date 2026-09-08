@@ -150,6 +150,12 @@ button[hidden],
   pointer-events: auto;
   text-decoration: none;
 }
+button.hotspot,
+button.hotspot[aria-pressed="true"] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
 .hotspot:before {
   content: "";
   width: 5px;

@@ -39,6 +39,8 @@ packs:
     local_path: public/assets/interior/
     used_for:
       - cropped furniture sprites in the room
+      - kitchen appliances, dining furniture, reading nook and lounge
+      - alternate refrigerator artwork for an accessible open/close interaction
       - tiled floors, walls and timber architecture
     notes: "Used as supplied visual material; confirm provenance before commercial redistribution."
 reference_assets:

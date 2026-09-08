@@ -99,7 +99,7 @@ if (process.argv.includes("--render")) {
       top: y,
       depth: 1.5,
     });
-  for (const [x, y, w, h] of room.beams) await add("beam", x, y, w, h, 3);
+  for (const [x, y, w, h] of room.beams) await add("beam", x, y, w, h, 6);
   for (const item of room.objects) {
     const [, , w, h] = atlas.frames[item.frame].rect;
     for (let y = 0; y < (item.repeat?.[1] ?? 1); y++)

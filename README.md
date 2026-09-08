@@ -29,6 +29,8 @@ The production URL is `https://imano177.github.io/portfolio/`. GitHub Actions bu
 
 ## Room controls and fallback
 
+The studio groups a complete kitchen, dining area, wall-backed reading nook, window workstation, balcony and lounge. Floor walkability and walls are authored in `src/game/data/room.json`, alongside furniture footprints and cat approaches. The refrigerator hotspot opens/closes the supplied alternate sprite; it is keyboard-accessible and pauses with the room. Appliances and furniture use original atlas artwork, not drawn stand-ins.
+
 The default screen is the full-viewport game room. The top-left icon opens portfolio navigation, the top-right opens room settings, and the cat icon opens keyboard-accessible cat controls. Clicking a cat opens its controls automatically. Persistent header/status/footer prose is intentionally absent.
 
 Use the navigation or room markers to open a section. Hash links such as `#projects` work on refresh. Escape closes the panel and restores focus. Text version displays the same HTML sections in document flow; it also works without JavaScript.

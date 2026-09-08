@@ -8,7 +8,12 @@ import {
   getTimeBlock,
   scoreActions,
 } from "./simulation";
-import { findPath, reserveDestination, zoneSlots, type Point } from "./navigation";
+import {
+  findPath,
+  reserveDestination,
+  zoneSlots,
+  type Point,
+} from "./navigation";
 import type {
   CatAction,
   CatAgent,
@@ -78,6 +83,7 @@ export class CatRoomScene extends Phaser.Scene {
   private failed = false;
   private lamps: Phaser.GameObjects.Image[] = [];
   private glows: Phaser.GameObjects.Image[] = [];
+  private fridge?: Phaser.GameObjects.Image;
   constructor(private options: RoomSceneOptions) {
     super("CatRoomScene");
     this.reduced = !!options.reducedMotion;
@@ -192,14 +198,20 @@ export class CatRoomScene extends Phaser.Scene {
         view.agent.currentState,
       );
       if (view.path.length) {
-        if(!view.surface && !view.transitDepth){
-          const others=[...this.views.values()].filter(v=>v!==view&&!v.surface).map(v=>({x:v.sprite.x,y:v.sprite.y}));
-          const next=view.path[0];
-          if(others.some(p=>Math.hypot(next.x-p.x,next.y-p.y)<20)){
-            if(this.elapsed>=(view.rerouteAt??0)){
-              const detour=findPath({x:view.sprite.x,y:view.sprite.y},view.destination,others);
-              if(detour.length)view.path=detour;
-              view.rerouteAt=this.elapsed+750;
+        if (!view.surface && !view.transitDepth) {
+          const others = [...this.views.values()]
+            .filter((v) => v !== view && !v.surface)
+            .map((v) => ({ x: v.sprite.x, y: v.sprite.y }));
+          const next = view.path[0];
+          if (others.some((p) => Math.hypot(next.x - p.x, next.y - p.y) < 20)) {
+            if (this.elapsed >= (view.rerouteAt ?? 0)) {
+              const detour = findPath(
+                { x: view.sprite.x, y: view.sprite.y },
+                view.destination,
+                others,
+              );
+              if (detour.length) view.path = detour;
+              view.rerouteAt = this.elapsed + 750;
             }
             continue;
           }
@@ -222,7 +234,7 @@ export class CatRoomScene extends Phaser.Scene {
         if (distance <= step) {
           view.sprite.setPosition(target.x, target.y);
           view.path.shift();
-          if(view.transitDepth)delete view.transitDepth;
+          if (view.transitDepth) delete view.transitDepth;
           if (!view.path.length) this.arrive(view);
         } else
           view.sprite.setPosition(
@@ -245,7 +257,8 @@ export class CatRoomScene extends Phaser.Scene {
         this.requestAction(view, action);
       }
       view.sprite.setDepth(
-        view.transitDepth ?? (view.surface ? view.surface.y + 50 : view.sprite.y + 1),
+        view.transitDepth ??
+          (view.surface ? view.surface.y + 50 : view.sprite.y + 1),
       );
       view.label.setPosition(view.sprite.x, view.sprite.y - 28);
     }
@@ -301,6 +314,16 @@ export class CatRoomScene extends Phaser.Scene {
     }
     this.options.onInteraction?.(view.agent, action);
     return true;
+  }
+  toggleFridge(): boolean | undefined {
+    if (!this.fridge || this.failed || this.scene.isPaused()) return undefined;
+    const open = this.fridge.frame.name === "fridge";
+    const frame = open ? "fridge-open" : "fridge";
+    this.fridge.setTexture(atlas.frames[frame].texture, frame);
+    this.options.onStatus?.(
+      open ? "Refrigerator opened." : "Refrigerator closed.",
+    );
+    return open;
   }
   getAgents(): Record<string, CatAgent> {
     return Object.fromEntries([...this.views].map(([id, v]) => [id, v.agent]));
@@ -372,13 +395,16 @@ export class CatRoomScene extends Phaser.Scene {
     if (view.agent.targetZone) {
       view.agent.currentZone = view.agent.targetZone;
       delete view.agent.targetZone;
-      const furniture = room.objects.find(item=>item.zone===view.agent.currentZone);
-      const seat = furniture?.perches?.find(slot=>slot.approach[0]===view.destination.x&&slot.approach[1]===view.destination.y);
-      const perch = seat ? {x:seat.seat[0],y:seat.seat[1]} : undefined;
-      if (
-        perch &&
-        (view.pending === "sleep" || view.pending === "observe")
-      ) {
+      const furniture = room.objects.find(
+        (item) => item.zone === view.agent.currentZone,
+      );
+      const seat = furniture?.perches?.find(
+        (slot) =>
+          slot.approach[0] === view.destination.x &&
+          slot.approach[1] === view.destination.y,
+      );
+      const perch = seat ? { x: seat.seat[0], y: seat.seat[1] } : undefined;
+      if (perch && (view.pending === "sleep" || view.pending === "observe")) {
         view.surface = perch;
         view.path = [perch];
         return;
@@ -437,10 +463,11 @@ export class CatRoomScene extends Phaser.Scene {
       this.skyLayers.set(family, images);
     }
     for (const [x, y, w, h] of room.beams)
-      this.image("beam", x, y, 3).setDisplaySize(w, h);
+      this.image("beam", x, y, 6).setDisplaySize(w, h);
     for (const item of room.objects) {
       const sprite = this.image(item.frame, item.x, item.y, item.depth);
       if (item.frame === "lamp") this.lamps.push(sprite);
+      if (item.id === "fridge") this.fridge = sprite;
     }
     this.lighting = this.add
       .rectangle(320, 180, 640, 360, 0x17172f, 0)

@@ -10,10 +10,18 @@ export const cellCenter = (p: Point): Point => ({
   y: Math.floor(p.y / CELL) * CELL + 8,
 });
 export function walkable(p: Point): boolean {
-  if (p.x < 8 || p.x >= 632 || p.y < 152 || p.y >= 344) return false;
-  if (p.y < 184 && (p.x < 64 || (p.x >= 368 && p.x < 400))) return false;
-  if(p.y<168 && !(p.x>=400&&p.x<608))return false;
-  if(room.barriers.some(([x,y,w,h])=>p.x>=x&&p.x<x+w&&p.y>=y&&p.y<y+h))return false;
+  if (
+    !room.walkableAreas.some(
+      ([x, y, w, h]) => p.x >= x && p.x < x + w && p.y >= y && p.y < y + h,
+    )
+  )
+    return false;
+  if (
+    room.barriers.some(
+      ([x, y, w, h]) => p.x >= x && p.x < x + w && p.y >= y && p.y < y + h,
+    )
+  )
+    return false;
   return !room.objects.some(
     (item) =>
       item.footprint &&
@@ -23,7 +31,11 @@ export function walkable(p: Point): boolean {
       p.y < item.footprint[1] + item.footprint[3],
   );
 }
-export function findPath(from: Point, to: Point, occupied:Point[]=[]): Point[] {
+export function findPath(
+  from: Point,
+  to: Point,
+  occupied: Point[] = [],
+): Point[] {
   const start = cellCenter(from),
     goal = cellCenter(to);
   if (!walkable(start) || !walkable(goal)) return [];
@@ -59,7 +71,12 @@ export function findPath(from: Point, to: Point, occupied:Point[]=[]): Point[] {
       const next = { x: current.x + dx, y: current.y + dy },
         id = key(next),
         g = cost.get(key(current))! + 16;
-      if (!walkable(next) || occupied.some(p=>Math.hypot(p.x-next.x,p.y-next.y)<20) || g >= (cost.get(id) ?? Infinity)) continue;
+      if (
+        !walkable(next) ||
+        occupied.some((p) => Math.hypot(p.x - next.x, p.y - next.y) < 20) ||
+        g >= (cost.get(id) ?? Infinity)
+      )
+        continue;
       cost.set(id, g);
       came.set(id, current);
       if (!open.some((p) => key(p) === id)) open.push(next);
