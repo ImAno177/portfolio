@@ -1,6 +1,6 @@
 # Cat Room repair — approved implementation
 
-Current follow-up: `fix/room-layout-v2` rebuilds the room as the user-approved studio. See `docs/review/cat-room/review.md` for current evidence. The previous spatial approval below was superseded by user-reported furniture placement defects; it must not be reused as acceptance of the new room. The studio revision is not merged or deployed.
+Current status (2026-09-09): studio revision and interaction-spacing fixes are merged into local `main` through `5ff4b28`. See `docs/review/cat-room/review.md` for the new review, regression evidence and remaining visual tradeoffs. The previous spatial approval below was superseded by user-reported furniture placement defects; it must not be reused as acceptance of the new room. Nothing has been pushed or deployed in this revision.
 
 Branch: `fix/asset-cat-room`; baseline `759d1fb`. GitHub profile out of scope.
 

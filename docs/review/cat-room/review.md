@@ -1,5 +1,18 @@
 # Cat Room repair verification
 
+## 2026-09-09 — local merge and interaction review
+
+Merged the studio revision (`92f4a09`) and review fixes (`5ff4b28`) into local `main` at the user's request. No push or deployment.
+
+Three confirmed defects fixed:
+- Reservations accepted adjacent 16px slots although movement requires 20px clearance. Reservation and movement now share the same clearance. A browser fixture with one cat at (360,312) confirmed a second cat reaches (392,312), enters play, and empties its path instead of taking the blocked intermediate slot.
+- The second feeding destination faced the water dish. Both feeding destinations now have food bowls; water remains separate.
+- The outer play destination was 30px from the toy. The toy is now within 20px of every play destination.
+
+All three regression tests failed before the fixes and passed afterward. Fresh verification: 33 logic tests (also passed after merge), 24 browser assertions, 30 atlas frames / 186 animation references, successful Astro check/build. The existing large Phaser bundle warning remains. Shared fallback regenerated. Desktop morning and sunset and mobile night screenshots inspected; mobile maintains 16:9 with no horizontal overflow.
+
+Remaining visual tradeoffs, not claimed fixed: the rear dining chair is mostly hidden by the table in the front-facing atlas perspective; portrait mobile has substantial letterboxing when showing the whole room without cropping. These do not block navigation, but the room should not be described as a faithful reproduction of the detailed reference illustration. This review is not a claim that all possible multi-cat traffic conflicts are eliminated.
+
 ## Studio layout revision — current worktree
 
 This revision supersedes the spatial approval below. The user correctly identified that earlier checks missed illogical placement: a lamp on sofa seating, stacked bookcases over glass, and a cabinet-side crop mislabeled as a notice board. Passing the old checks was not sufficient visual acceptance.
