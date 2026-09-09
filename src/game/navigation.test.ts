@@ -8,6 +8,17 @@ import {
 import room from "./data/room.json";
 import type { ZoneId } from "./types";
 describe("shared room navigation", () => {
+  it("does not reserve a slot inside another cat's avoidance distance", () => {
+    const slots = zoneSlots("play");
+    expect(
+      reserveDestination("play", { x: 312, y: 328 }, [slots[0]])?.point,
+    ).toEqual(slots[2]);
+    expect(
+      reserveDestination("window", { x: 312, y: 328 }, [
+        zoneSlots("window")[0],
+      ]),
+    ).toBeUndefined();
+  });
   it("enters the balcony through the doorway, never through its railing", () => {
     expect(walkable({ x: 472, y: 184 })).toBe(false);
     expect(walkable({ x: 280, y: 152 })).toBe(false);

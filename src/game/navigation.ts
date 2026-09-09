@@ -3,6 +3,7 @@ import type { ZoneId } from "./types";
 
 export type Point = { x: number; y: number };
 export const CELL = 16;
+export const CAT_CLEARANCE = 20;
 const key = (p: Point): string =>
   `${Math.floor(p.x / CELL)},${Math.floor(p.y / CELL)}`;
 export const cellCenter = (p: Point): Point => ({
@@ -73,7 +74,9 @@ export function findPath(
         g = cost.get(key(current))! + 16;
       if (
         !walkable(next) ||
-        occupied.some((p) => Math.hypot(p.x - next.x, p.y - next.y) < 20) ||
+        occupied.some(
+          (p) => Math.hypot(p.x - next.x, p.y - next.y) < CAT_CLEARANCE,
+        ) ||
         g >= (cost.get(id) ?? Infinity)
       )
         continue;
@@ -93,7 +96,12 @@ export function reserveDestination(
   occupied: Point[],
 ): { point: Point; path: Point[] } | undefined {
   for (const point of zoneSlots(zone)) {
-    if (occupied.some((p) => key(p) === key(point))) continue;
+    if (
+      occupied.some(
+        (p) => Math.hypot(p.x - point.x, p.y - point.y) < CAT_CLEARANCE,
+      )
+    )
+      continue;
     const path = findPath(from, point);
     if (path.length || (from.x === point.x && from.y === point.y))
       return { point, path };

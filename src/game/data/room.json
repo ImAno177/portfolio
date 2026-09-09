@@ -321,17 +321,24 @@
       "depth": 5
     },
     {
+      "id": "food-second",
+      "frame": "bowl",
+      "x": 80,
+      "y": 176,
+      "depth": 5
+    },
+    {
       "id": "water",
       "frame": "water",
-      "x": 80,
+      "x": 112,
       "y": 176,
       "depth": 5
     },
     {
       "id": "toy",
       "frame": "toy",
-      "x": 352,
-      "y": 272,
+      "x": 360,
+      "y": 288,
       "depth": 6
     },
     {

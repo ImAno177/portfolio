@@ -9,6 +9,7 @@ import {
   scoreActions,
 } from "./simulation";
 import {
+  CAT_CLEARANCE,
   findPath,
   reserveDestination,
   zoneSlots,
@@ -203,7 +204,11 @@ export class CatRoomScene extends Phaser.Scene {
             .filter((v) => v !== view && !v.surface)
             .map((v) => ({ x: v.sprite.x, y: v.sprite.y }));
           const next = view.path[0];
-          if (others.some((p) => Math.hypot(next.x - p.x, next.y - p.y) < 20)) {
+          if (
+            others.some(
+              (p) => Math.hypot(next.x - p.x, next.y - p.y) < CAT_CLEARANCE,
+            )
+          ) {
             if (this.elapsed >= (view.rerouteAt ?? 0)) {
               const detour = findPath(
                 { x: view.sprite.x, y: view.sprite.y },

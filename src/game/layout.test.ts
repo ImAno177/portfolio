@@ -32,6 +32,29 @@ const bounds = (item: (typeof room.objects)[number]) => {
 const overlaps = ([x, y, w, h]: number[], [a, b, c, d]: number[]) =>
   x < a + c && x + w > a && y < b + d && y + h > b;
 
+it("each feeding slot has food rather than an empty water dish", () => {
+  for (const [x, y] of room.zones.food)
+    expect(
+      room.objects.some(
+        (o) =>
+          o.frame === "bowl" &&
+          x >= o.x &&
+          x < o.x + 32 &&
+          y >= o.y &&
+          y < o.y + 32,
+      ),
+    ).toBe(true);
+});
+
+it("play slots stay within paw reach of the toy", () => {
+  const toy = room.objects.find((o) => o.id === "toy")!;
+  // Ball occupies the lower centre of its 16px source cell.
+  for (const [x, y] of room.zones.play)
+    expect(Math.hypot(x - (toy.x + 16), y - (toy.y + 22))).toBeLessThanOrEqual(
+      20,
+    );
+});
+
 it("kitchen work surfaces separate the sink from the cooker", () => {
   const ids = ["fridge", "sink", "kitchen-counter", "stove"];
   const items = ids.map((id) => room.objects.find((o) => o.id === id)!);
