@@ -1,235 +1,54 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import AssetShelf from "../components/AssetShelf.astro";
-import PortfolioPanel from "../components/PortfolioPanel.astro";
-import { profile, projects, researchNotes, skillGroups } from "../data/portfolio";
-
-const baseUrl = import.meta.env.BASE_URL;
+import Layout from '../layouts/Layout.astro';
+import { profile, projects, skillGroups, certificates } from '../data/portfolio';
+import '../styles/meadow.css';
+const base = import.meta.env.BASE_URL;
+const shortIssuer = (issuer: string) => issuer === 'British Standards Institution' ? 'BSI' : issuer;
 ---
-
-<Layout
-  title={`${profile.name} / cat room portfolio`}
-  description={`${profile.name}'s pixel-room portfolio for cloud security, Web3 security, Android security, and program analysis.`}
->
-  <a class="skip-link" href="#content">Skip to portfolio content</a>
-  <div class="site-shell" data-base-path={baseUrl}>
-    <header class="site-header" data-header>
-      <a class="wordmark" href="#home">
-        <span class="wordmark__cat" aria-hidden="true">⌁</span>
-        <span>IMANO177</span>
-        <small>cat room / portfolio</small>
-      </a>
-      <nav class="main-nav" aria-label="Primary navigation">
-        <a href="#about">about</a>
-        <a href="#projects">projects</a>
-        <a href="#research">research</a>
-        <a href="#contact">contact</a>
-      </nav>
-      <div class="header-tools">
-        <span class="time-chip" data-time-label>local time / --:--</span>
-        <button class="small-button" type="button" data-motion-toggle aria-pressed="false">motion on</button>
-      </div>
+<Layout title={`${profile.name} — a quiet study`} description={`A small, interactive room for things learned. Explore ${profile.name}'s certificates from IBM, Google and BSI, and the work behind them.`}>
+  <a class="skip-link" href="#collection">Browse the certificates without using 3D</a>
+  <div class="gallery-app" data-gallery-app data-base-path={base} data-time="day">
+    <header class="gallery-header">
+      <a class="gallery-brand" href="#room" aria-label="Return to the room"><svg viewBox="0 0 34 38" fill="none" aria-hidden="true"><path d="M5 33V8l12-5 12 5v25H5Z M17 3v30M5 17h24M11 33v-9h12v9" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M2 35h30" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span>{profile.name}<small>A QUIET STUDY</small></span></a>
+      <nav class="gallery-nav" aria-label="Portfolio navigation"><a href="#collection" data-collection-link>Collection <span class="collection-count">{certificates.length}</span></a><a href="#about">About</a><a href="#contact" class="gallery-contact-link">Say hello <span aria-hidden="true">↗</span></a></nav>
     </header>
-
-    <main id="content">
-      <section class="hero" id="home" aria-labelledby="hero-title">
-        <div class="hero__copy">
-          <p class="hero__route"><span>ROOM 01</span> / PERSONAL STUDIO / OPEN SKY</p>
-          <h1 id="hero-title">A small room for <em>serious systems.</em></h1>
-          <p class="hero__lead">{profile.summary} The room is alive; the portfolio stays readable.</p>
-          <div class="hero__actions">
-            <a class="button button--primary" href="#projects">walk to projects <span aria-hidden="true">→</span></a>
-            <button class="button button--secondary" type="button" data-panel-open="cv">open CV / profile</button>
-            <a class="button button--text" href={`mailto:${profile.email}`}>send a signal <span aria-hidden="true">↗</span></a>
-          </div>
-          <div class="hero__facts" aria-label="Profile facts">
-            <span><b>focus</b> {profile.role}</span>
-            <span><b>habitat</b> {profile.habitat}</span>
-            <span><b>editor</b> {profile.editor}</span>
-          </div>
+    <main>
+      <section class="gallery-stage" id="room" data-gallery-stage data-scene-state="resting" aria-labelledby="room-title">
+        <h1 id="room-title" class="visually-hidden">ImAno177’s study — a room for things learned</h1>
+        <div class="gallery-fallback">
+          <div class="fallback-window" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+          <div class="fallback-rail" aria-hidden="true"></div>
+          <div class="fallback-frames">{certificates.map(certificate => <a class="fallback-frame" href={`#${certificate.id}`} aria-label={`View ${certificate.title}`}><img src={`${base}${certificate.image}`} width="1200" height="928" alt={`${certificate.title}, awarded to Duong Bach Chi by ${certificate.issuer}`} /><span>{shortIssuer(certificate.issuer)}</span></a>)}</div>
+          <div class="fallback-cabinet" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="fallback-floor" aria-hidden="true"></div>
         </div>
-
-        <div class="room-stage" aria-label="Interactive cat room simulation">
-          <div class="room-stage__head">
-            <span><i class="status-dot" aria-hidden="true"></i> live room / fixed camera</span>
-            <span data-weather-label>sky / reading local time</span>
-          </div>
-          <div class="cat-room" id="cat-room" data-cat-room-root role="region" aria-label="A pixel-art room with a glass wall, sky, covered balcony, plants, furniture, and cats.">
-            <div class="room-fallback" data-room-fallback aria-hidden="true">
-              <div class="room-fallback__sky" style={`--fallback-sky: url("${baseUrl}assets/sky/sky-01-orig-big.png")`}></div>
-              <div class="room-fallback__glass"></div>
-              <div class="room-fallback__balcony"><span></span><span></span><span></span><span></span></div>
-              <div class="room-fallback__roof"></div>
-              <div class="room-fallback__floor"></div>
-              <div class="room-fallback__desk"><span class="room-fallback__screen"></span><span class="room-fallback__lamp"></span></div>
-              <div class="room-fallback__sofa"></div>
-              <div class="room-fallback__plant room-fallback__plant--one"></div>
-              <div class="room-fallback__plant room-fallback__plant--two"></div>
-              <div class="room-fallback__cats">
-                <span></span><span></span><span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-            <div class="room-hotspots" aria-label="Room shortcuts">
-              <button class="hotspot hotspot--desk" type="button" data-hotspot="projects"><span>desk</span><b>projects</b></button>
-              <button class="hotspot hotspot--shelf" type="button" data-hotspot="research"><span>shelf</span><b>research</b></button>
-              <button class="hotspot hotspot--window" type="button" data-hotspot="about"><span>window</span><b>about</b></button>
-              <button class="hotspot hotspot--board" type="button" data-hotspot="cv"><span>board</span><b>CV / profile</b></button>
-              <button class="hotspot hotspot--terminal" type="button" data-hotspot="github"><span>terminal</span><b>GitHub</b></button>
-            </div>
-            <div class="room-overlay" data-room-overlay>
-              <span>phaser room layer</span>
-              <strong data-room-status>loading room...</strong>
-            </div>
-          </div>
-          <div class="room-stage__foot">
-            <span data-room-time>--:-- / --</span>
-            <span data-room-cats>6 cats / initializing</span>
-            <span>click a cat to pet · use the controls to feed or play</span>
+        <div class="gallery-canvas" data-gallery-root tabindex="0" role="group" aria-label="Three-dimensional study. Drag or use the arrow keys to look around. Use the collection links to view each certificate."></div>
+        <nav class="frame-hotspots" aria-label="Framed certificates">{certificates.map(certificate => <a href={`#${certificate.id}`} class="frame-hotspot" data-frame-link={certificate.id} aria-label={`View ${certificate.title}`}><span class="frame-dot" aria-hidden="true"></span><span class="frame-tooltip">{shortIssuer(certificate.issuer)} <span aria-hidden="true">↗</span></span></a>)}</nav>
+        <div class="room-message"><p data-gallery-status role="status">An illustrated room. Choose a frame to see what’s inside.</p><button type="button" data-gallery-retry hidden>Try the 3D room again</button></div>
+        <div class="room-introduction"><span class="room-eyebrow">A personal collection</span><p>Things learned.<br /><em>Kept close.</em></p><span class="room-invitation" data-room-hint>Three frames, each with a story.</span></div>
+        <div class="gallery-bottom">
+          <nav class="frame-index" aria-label="Choose a certificate"><span class="frame-index-label">ON THE WALL</span>{certificates.map((certificate, index) => <a href={`#${certificate.id}`} data-select-frame={certificate.id}><span class="frame-number">{String(index + 1).padStart(2, '0')}</span>{shortIssuer(certificate.issuer)}<span class="frame-index-arrow" aria-hidden="true">↗</span></a>)}</nav>
+          <div class="gallery-controls" aria-label="Room settings" data-gallery-controls hidden>
+            <button type="button" data-time-toggle aria-label="Evening light" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="3.4"/><path d="M10 1v2m0 14v2M1 10h2m14 0h2M3.6 3.6 5 5m10 10 1.4 1.4m0-12.8L15 5M5 15l-1.4 1.4"/></svg><span data-time-label>Afternoon</span></button>
+            <button type="button" data-motion-toggle aria-label="Pause room motion" aria-pressed="false"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 4v12m6-12v12"/></svg><span data-motion-label>Pause</span></button>
+            <button type="button" data-reset-view aria-label="Reset the room view" title="Reset the view"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 8a6.3 6.3 0 1 1 0 5m0-10v5h5"/></svg></button>
           </div>
         </div>
       </section>
-
-      <section class="room-controls" aria-label="Cat room controls">
-        <div class="room-controls__intro">
-          <span class="micro-label">room controls</span>
-          <strong data-selected-cat>Select a cat in the room</strong>
-        </div>
-        <div class="room-controls__actions">
-          <button class="control-button" type="button" data-cat-action="pet" disabled>pet</button>
-          <button class="control-button" type="button" data-cat-action="feed" disabled>feed</button>
-          <button class="control-button" type="button" data-cat-action="play" disabled>play</button>
-          <button class="control-button" type="button" data-cat-action="call" disabled>call</button>
-        </div>
-        <p class="room-controls__status" role="status" aria-live="polite" data-interaction-status>Nothing needs your attention yet.</p>
-      </section>
-
-      <section class="about-section page-section" id="about" aria-labelledby="about-title">
-        <div class="section-label">01 / about the room</div>
-        <div class="about-section__grid">
-          <div>
-            <h2 id="about-title">The simulation is the welcome mat. The work is the house.</h2>
-            <p>{profile.summary} I like systems that stay inspectable: tools with a clear path, security work with a useful trace, and interfaces that leave enough room for curiosity.</p>
-            <p class="muted-copy">The cats are optional company. Every important detail is available below as normal HTML, even when the room is paused or unavailable.</p>
-          </div>
-          <dl class="fact-list">
-            <div><dt>main interests</dt><dd>{profile.interests.join(" · ")}</dd></div>
-            <div><dt>syntax</dt><dd>{profile.languages.join(" · ")}</dd></div>
-            <div><dt>markup</dt><dd>{profile.markup.join(" · ")}</dd></div>
-            <div><dt>habitat</dt><dd>{profile.habitat}</dd></div>
-          </dl>
-        </div>
-      </section>
-
-      <section class="projects-section page-section" id="projects" aria-labelledby="projects-title">
-        <div class="section-heading">
-          <div>
-            <div class="section-label">02 / desk zone</div>
-            <h2 id="projects-title">Projects you can inspect.</h2>
-          </div>
-          <a class="section-link" href={profile.github} target="_blank" rel="noreferrer">all repositories ↗</a>
-        </div>
-        <div class="project-grid grid gap-6 md:grid-cols-3">
-          {projects.map((project, index) => (
-            <article class={`project-card project-card--${index + 1}`}>
-              <div class="project-card__top"><span>0{index + 1}</span><span>{project.type}</span></div>
-              <h3>{project.title}</h3>
-              <p>{project.description}</p>
-              <ul class="tag-row" aria-label={`${project.title} technologies`}>
-                {project.tags.map((tag) => <li>{tag}</li>)}
-              </ul>
-              <a class="project-card__link" href={project.href} target="_blank" rel="noreferrer">open source <span aria-hidden="true">↗</span></a>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section class="research-section page-section" id="research" aria-labelledby="research-title">
-        <div class="section-heading">
-          <div>
-            <div class="section-label">03 / bookshelf zone</div>
-            <h2 id="research-title">Notes from the quiet hours.</h2>
-          </div>
-          <span class="section-count">3 threads / public</span>
-        </div>
-        <div class="research-list">
-          {researchNotes.map((note) => (
-            <article class="research-note">
-              <span class="research-note__index">{note.label}</span>
-              <h3>{note.title}</h3>
-              <p>{note.text}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section class="profile-section page-section" id="cv" aria-labelledby="profile-title">
-        <div class="section-label">04 / notice board</div>
-        <div class="profile-section__grid">
-          <div>
-            <h2 id="profile-title">CV / profile, without the maze.</h2>
-            <p>For a complete CV or education history, send an email and I will share the current version. The public profile keeps the confirmed technical surface here.</p>
-            <a class="button button--primary" href={`mailto:${profile.email}?subject=CV%20request`}>request CV <span aria-hidden="true">↗</span></a>
-          </div>
-          <div class="skill-board">
-            {skillGroups.map((group) => (
-              <div class="skill-board__row"><span>{group.label}</span><strong>{group.values.join(" / ")}</strong></div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section class="contact-section page-section" id="contact" aria-labelledby="contact-title">
-        <div>
-          <div class="section-label">05 / window ledge</div>
-          <h2 id="contact-title">Open a channel.</h2>
-          <p>Direct routes, no hidden quest required.</p>
-        </div>
-        <div class="contact-links">
-          <a href={`mailto:${profile.email}`}><span>email</span><strong>{profile.email}</strong><b>↗</b></a>
-          <a href={`https://discord.com/users/${profile.discord}`} target="_blank" rel="noreferrer"><span>discord</span><strong>{profile.discord}</strong><b>↗</b></a>
-          <a href={profile.github} target="_blank" rel="noreferrer"><span>github</span><strong>github.com/ImAno177</strong><b>↗</b></a>
-          <a href={profile.portfolio} target="_blank" rel="noreferrer"><span>portfolio</span><strong>imano177.github.io/portfolio</strong><b>↗</b></a>
-        </div>
-      </section>
-
-      <AssetShelf baseUrl={baseUrl} />
+      <div class="gallery-content" data-gallery-content>
+        <section id="collection" class="gallery-panel" aria-labelledby="collection-heading">
+          <p class="panel-eyebrow">On the wall</p><h2 id="collection-heading">A few things I’ve learned.</h2><p class="panel-intro">Three certificates, their original images, and a link to verify each one.</p>
+          <div class="certificate-grid">{certificates.map((certificate, index) => <article class="certificate-record" id={certificate.id} data-certificate>
+            <div class="certificate-art"><img class="certificate-image" src={`${base}${certificate.image}`} width="1200" height="928" loading="lazy" alt={`Original Coursera certificate: ${certificate.title}, awarded to Duong Bach Chi on ${certificate.date}`} /></div>
+            <div class="certificate-information"><p class="panel-eyebrow">{shortIssuer(certificate.issuer)} <span aria-hidden="true">·</span> {certificate.kind}</p><h3 id={`${certificate.id}-heading`}>{certificate.title}</h3><p class="certificate-description">{certificate.description}</p><dl class="certificate-facts"><div><dt>Issued by</dt><dd>{certificate.issuer}</dd></div><div><dt>Completed</dt><dd><time datetime={certificate.issued}>{certificate.date}</time></dd></div><div><dt>Credential</dt><dd><code>{certificate.credentialId}</code></dd></div></dl><ul class="certificate-tags" aria-label="Topics">{certificate.tags.map(tag => <li>{tag}</li>)}</ul><div class="certificate-links"><a class="gallery-button" href={certificate.href} target="_blank" rel="noreferrer">Verify on Coursera <span aria-hidden="true">↗</span></a><a class="certificate-full-size" href={`${base}${certificate.image}`} target="_blank" rel="noreferrer">Open full-size image ↗</a><a href={`#${certificate.id}`} class="open-certificate" data-open-certificate>View frame <span aria-hidden="true">↗</span></a></div><span class="certificate-folio">{String(index + 1).padStart(2, '0')} / {String(certificates.length).padStart(2, '0')}</span></div>
+          </article>)}</div><p class="collection-provenance">Certificate images and completion dates are from the linked Coursera records. These are course and program completion credentials, not university degrees.</p>
+        </section>
+        <section id="about" class="gallery-panel prose-panel" aria-labelledby="about-heading"><p class="panel-eyebrow">The person behind the frames</p><h2 id="about-heading">Hi, I’m {profile.name}.</h2><p>{profile.summary}</p><p>I like inspectable systems, local-first tools, and a carefully riced desktop. This room is a small place to keep what I’m learning.</p><dl class="gallery-skills">{skillGroups.map(group => <div><dt>{group.label}</dt><dd>{group.values.join(' / ')}</dd></div>)}</dl><h3>Elsewhere on my workbench</h3><ul class="gallery-project-links">{projects.map(project => <li><a href={project.href} target="_blank" rel="noreferrer"><span>{project.title}</span><span aria-hidden="true">↗</span></a><p>{project.description}</p></li>)}</ul><div class="about-links"><a href={`mailto:${profile.email}?subject=CV%20request`}>Request my current CV ↗</a></div></section>
+        <section id="contact" class="gallery-panel prose-panel" aria-labelledby="contact-heading"><p class="panel-eyebrow">Pull up a chair</p><h2 id="contact-heading">Leave a little note.</h2><p>A question, an interesting project, or just a hello.</p><a class="contact-email" href={`mailto:${profile.email}`}>{profile.email}</a><dl class="contact-details"><div><dt>GitHub</dt><dd><a href={profile.github} target="_blank" rel="noreferrer">ImAno177 ↗</a></dd></div><div><dt>Discord</dt><dd><code>{profile.discord}</code><button type="button" data-copy-discord={profile.discord} hidden>Copy username</button></dd></div></dl><p class="copy-feedback" data-copy-status role="status"></p></section>
+      </div>
     </main>
-
-    <footer class="site-footer">
-      <span>IMANO177 / CAT ROOM PORTFOLIO</span>
-      <span>static by design · living by local time</span>
-      <a href="#home">back to window ↑</a>
-    </footer>
+    <dialog class="gallery-dialog" data-gallery-dialog aria-label="Collection details"><div class="gallery-dialog-bar"><a href="#collection" class="dialog-collection-link">The collection</a><button type="button" data-panel-close autofocus aria-label="Close and return to the room">Close <span aria-hidden="true">×</span></button></div><div data-panel-body></div><nav class="certificate-pagination" data-certificate-pagination aria-label="Browse certificates" hidden><button type="button" data-previous-certificate>← Previous frame</button><span data-certificate-position></span><button type="button" data-next-certificate>Next frame →</button></nav></dialog>
   </div>
-
-  <PortfolioPanel id="about" title="About the room" kicker="window / about">
-    <p>{profile.summary}</p>
-    <p>The room is a small interface experiment around a normal portfolio. Pause it, ignore it, or use the objects as shortcuts; the work remains yours to browse.</p>
-  </PortfolioPanel>
-  <PortfolioPanel id="projects" title="Projects" kicker="desk / projects">
-    {projects.map((project) => <p><a href={project.href} target="_blank" rel="noreferrer"><strong>{project.title}</strong></a> — {project.description}</p>)}
-  </PortfolioPanel>
-  <PortfolioPanel id="research" title="Research / notes" kicker="shelf / research">
-    {researchNotes.map((note) => <p><strong>{note.title}.</strong> {note.text}</p>)}
-  </PortfolioPanel>
-  <PortfolioPanel id="cv" title="CV / profile" kicker="board / profile">
-    <p>The public profile currently confirms {profile.role}, {profile.habitat}, and the technical groups listed on the notice board.</p>
-    <a class="button button--primary" href={`mailto:${profile.email}?subject=CV%20request`}>request the current CV ↗</a>
-  </PortfolioPanel>
-  <PortfolioPanel id="contact" title="Contact" kicker="window / contact">
-    <p><a href={`mailto:${profile.email}`}>{profile.email}</a></p>
-    <p><a href={`https://discord.com/users/${profile.discord}`} target="_blank" rel="noreferrer">Discord / {profile.discord}</a></p>
-  </PortfolioPanel>
-  <PortfolioPanel id="github" title="GitHub" kicker="terminal / github">
-    <p>The repository trail lives at <a href={profile.github} target="_blank" rel="noreferrer">github.com/ImAno177 ↗</a>.</p>
-  </PortfolioPanel>
-
-  <noscript>
-    <div class="noscript-banner">JavaScript is off. The room is paused, but the portfolio content above remains available.</div>
-  </noscript>
-
-  <script>
-    import { setupPortfolioUI } from "../client/portfolio-ui";
-    setupPortfolioUI();
-  </script>
+  <noscript><p class="gallery-noscript">The illustrated edition works without JavaScript. All certificates and verification links are available below the room.</p></noscript>
+  <script>import { setupGalleryPortfolio } from '../client/meadow-ui'; setupGalleryPortfolio();</script>
 </Layout>

@@ -20,8 +20,7 @@ export const projects = [
     type: "Product / Android",
     description: "Local-first Android reader for discovering and reading scientific papers in a mobile-friendly layout.",
     tags: ["Kotlin", "Android", "local-first"],
-    href: "https://github.com/ImAno177/PaperReader",
-    hotspot: "projects"
+    href: "https://github.com/ImAno177/PaperReader"
   },
   {
     id: "android-security-lab",
@@ -29,8 +28,7 @@ export const projects = [
     type: "Security / Reports",
     description: "Android security labs covering Frida, root detection, APK analysis, secure programming, and original reports.",
     tags: ["Frida", "APK analysis", "Android"],
-    href: "https://github.com/ImAno177/android-security-lab",
-    hotspot: "research"
+    href: "https://github.com/ImAno177/android-security-lab"
   },
   {
     id: "spider",
@@ -38,15 +36,8 @@ export const projects = [
     type: "Analysis / Solidity",
     description: "Solidity CPG extractor with cross-contract control and data flow, plus deterministic JSON and DOT exports.",
     tags: ["Python", "Solidity", "CPG"],
-    href: "https://github.com/ImAno177/spider",
-    hotspot: "github"
+    href: "https://github.com/ImAno177/spider"
   }
-] as const;
-
-export const researchNotes = [
-  { label: "01", title: "Android instrumentation", text: "Frida, root detection, APK analysis, and secure programming notes live in the Android Security Lab." },
-  { label: "02", title: "Program analysis", text: "Spider turns Solidity into deterministic JSON and DOT traces for cross-contract control and data flow." },
-  { label: "03", title: "Local-first tools", text: "PaperReader explores a mobile reading surface that stays useful when the network disappears." }
 ] as const;
 
 export const skillGroups = [
@@ -54,3 +45,47 @@ export const skillGroups = [
   { label: "build", values: ["Go", "C++", "Python", "Kotlin"] },
   { label: "surface", values: ["HTML", "CSS", "Markdown", "local-first"] }
 ] as const;
+
+export const certificates = [
+  {
+    id: "ibm-compliance",
+    title: "Cybersecurity Compliance Framework, Standards & Regulations",
+    issuer: "IBM",
+    kind: "Course certificate",
+    issued: "2026-09-11",
+    date: "September 11, 2026",
+    image: "assets/certificates/ibm-compliance.webp",
+    href: "https://coursera.org/share/3b7aef3efdfd559379d603aa671d2059",
+    credentialId: "Y8915IW7BKON",
+    description: "Governance, risk and compliance; NIST CSF, ISO/IEC 27001, COBIT, SOC reports and security audits.",
+    tags: ["Governance", "Compliance", "Risk management"]
+  },
+  {
+    id: "google-cybersecurity",
+    title: "Google Cybersecurity Professional Certificate",
+    issuer: "Google",
+    kind: "Professional certificate",
+    issued: "2026-09-16",
+    date: "September 16, 2026",
+    image: "assets/certificates/google-cybersecurity.webp",
+    href: "https://coursera.org/share/dc3ee9abc7399aa99c29561212168529",
+    credentialId: "QCAFQ8T2LGU7",
+    description: "Hands-on cybersecurity training in Python, Linux, SQL, SIEM and intrusion detection, with security risk and threat mitigation.",
+    tags: ["Cybersecurity", "Python & Linux", "SIEM / IDS"]
+  },
+  {
+    id: "bsi-ai-risk",
+    title: "AI Technical Risk Controls Specialization",
+    issuer: "British Standards Institution",
+    kind: "Specialization certificate",
+    issued: "2026-09-19",
+    date: "September 19, 2026",
+    image: "assets/certificates/bsi-ai-risk.webp",
+    href: "https://coursera.org/share/d313789af9f4051f86e54a629869791d",
+    credentialId: "TPW0FB2QCIEP",
+    description: "Standards-based evaluation of neural network robustness, classification performance and unwanted bias in AI systems.",
+    tags: ["AI risk", "ISO/IEC guidance", "Model evaluation"]
+  }
+] as const;
+
+export type CertificateId = (typeof certificates)[number]["id"];
