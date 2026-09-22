@@ -1,7 +1,5 @@
-# Cat Room Portfolio
+# ImAno177 Portfolio
 
-This document points to the authoritative product requirements for the current build: [SPEC.md](./SPEC.md).
+The shipped product is a static, accessible portfolio. Essential content remains DOM-first: About, Projects, CV/Profile, Contact, external links, and GitHub. A Three.js "quiet study" certificate gallery is the visual layer; if it or WebGL fails, the fallback illustration and all portfolio content remain available.
 
-The shipped product is a static, accessible portfolio with a fixed pixel-art room as its visual layer. Essential content remains DOM-first: About, Projects, Research, CV/Profile, Contact, external links, and GitHub. Phaser is optional enhancement; if it fails, the fallback room and all portfolio content remain available.
-
-Primary stack: Astro, TypeScript, Tailwind CSS, Phaser 4, GitHub Actions, GitHub Pages, and localStorage.
+Primary stack: Astro, TypeScript, Tailwind CSS, Three.js, GitHub Actions, GitHub Pages.

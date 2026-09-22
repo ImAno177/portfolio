@@ -1,0 +1,1212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ImAno177 — Retro OS</title>
+<!-- Wallpaper: "Hungary, Etyek, Windows XP, Bliss, 1.jpg" by Random photos 1989, CC BY-SA 4.0, via Wikimedia Commons -->
+<style>
+  /* ---------- base ---------- */
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    overflow: hidden;
+    font-family: "MS Sans Serif", Tahoma, Verdana, Geneva, sans-serif;
+    font-size: 11px;
+    color: #000;
+    -webkit-tap-highlight-color: transparent;
+  }
+  :root { --task-h: 32px; }
+  button { font: inherit; color: inherit; }
+  a { color: #0000ee; }
+  a:focus-visible, button:focus-visible {
+    outline: 1px dotted #000;
+    outline-offset: -3px;
+  }
+
+  /* ---------- bevels ---------- */
+  .raised {
+    background: #c0c0c0;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+                inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  }
+  .sunken {
+    background: #fff;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
+                inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+  }
+  .btn {
+    background: #c0c0c0;
+    border: 0;
+    padding: 4px 14px;
+    cursor: default;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+                inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  }
+  .btn:active, .btn.pressed {
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
+                inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+    padding: 5px 13px 3px 15px;
+  }
+
+  /* ---------- desktop : Bliss-style hill photo ---------- */
+  #desktop {
+    position: fixed;
+    inset: 0 0 var(--task-h) 0;
+    background: #5a8fd0 url("bliss.jpg") center / cover no-repeat;
+    overflow: hidden;
+  }
+  #icons {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 18px;
+    padding: 14px 10px;
+  }
+  .icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: 78px;
+    padding: 4px 2px;
+    background: none;
+    border: 0;
+    color: #fff;
+    text-align: center;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .icon .ico { width: 32px; height: 32px; display: block; }
+  .icon .lbl {
+    padding: 1px 3px;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+    text-shadow: 1px 1px 0 rgba(0,0,0,.85);
+  }
+  .icon.selected .lbl { background: #000080; text-shadow: none; }
+  .icon:focus-visible { outline: none; }
+  .icon:focus-visible .lbl { outline: 1px dotted #fff; outline-offset: 1px; background: #000080; text-shadow: none; }
+
+  /* ---------- windows ---------- */
+  .win {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+    max-width: calc(100vw - 8px);
+    max-height: calc(100dvh - var(--task-h) - 6px);
+    background: #c0c0c0;
+    padding: 3px;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf,
+                inset -2px -2px #808080, inset 2px 2px #fff;
+  }
+  .win[hidden], .win.min { display: none; }
+  .win.max {
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: calc(100dvh - var(--task-h)) !important;
+    max-height: none;
+  }
+  .titlebar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 20px;
+    padding: 0 2px 0 3px;
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: .02em;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  .win:not(.active) .titlebar { background: linear-gradient(90deg, #808080, #b5b5b5); color: #e8e8e8; }
+  .tb-icon { width: 16px; height: 16px; flex: none; }
+  .tb-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tb-btns { display: flex; gap: 2px; }
+  .tb-btn {
+    width: 16px;
+    height: 14px;
+    padding: 0;
+    background: #c0c0c0;
+    border: 0;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+                inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  }
+  .tb-btn:active {
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
+                inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+  }
+  .menubar {
+    display: flex;
+    gap: 2px;
+    padding: 2px 0;
+  }
+  .menubar span { padding: 2px 7px; }
+  .menubar span:first-letter { text-decoration: underline; }
+  .win-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 10px;
+  }
+  .win-body.paper { font-family: Consolas, "Courier New", monospace; }
+  .statusbar {
+    display: flex;
+    gap: 2px;
+    padding-top: 2px;
+  }
+  .status-cell {
+    flex: 1;
+    padding: 2px 6px;
+    color: #222;
+    box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .status-cell.r { flex: 0 1 auto; }
+
+  /* welcome */
+  #w-welcome h1 { margin: 0; font-size: 22px; letter-spacing: .02em; }
+  #w-welcome .who { margin: 0 0 8px; color: #404040; }
+  #w-welcome .tag { margin: 0 0 10px; font-style: italic; }
+  #w-welcome .quick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .quick .btn { display: inline-flex; align-items: center; gap: 6px; }
+  .quick .ico { width: 16px; height: 16px; }
+  hr.sep { border: 0; border-top: 1px solid #808080; border-bottom: 1px solid #fff; margin: 10px 0; }
+
+  /* projects folder */
+  .filelist { margin: 0; padding: 0; list-style: none; }
+  .file-row {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 4px 10px;
+    align-items: start;
+    width: 100%;
+    padding: 8px 6px;
+    color: #000;
+    text-decoration: none;
+    font: inherit;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid #e8e8e8;
+    cursor: default;
+  }
+  .file-row:hover { background: #eef4fb; }
+  .file-row:focus-visible { outline: 1px dotted #000; outline-offset: -1px; background: #000080; color: #fff; }
+  .file-row:focus-visible .desc, .file-row:focus-visible .meta { color: #d8e4f8; }
+  .file-row .ico { width: 32px; height: 32px; grid-row: span 2; }
+  .file-row .name { font-weight: 700; }
+  .file-row .meta { color: #606060; margin-left: 6px; font-weight: 400; }
+  .file-row .desc { grid-column: 2; color: #404040; }
+  .file-row .pin { color: #8a6d1a; font-weight: 400; }
+
+  /* certificates explorer */
+  .certgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .cert-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    background: #c0c0c0;
+    border: 0;
+    font: inherit;
+    text-align: left;
+    cursor: default;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+                inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  }
+  .cert-tile:active {
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
+                inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+  }
+  .cert-tile:focus-visible { outline: 1px dotted #000; outline-offset: -4px; }
+  .cert-tile img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    background: #fff;
+    border: 1px solid #808080;
+  }
+  .cert-tile .ct-name { font-weight: 700; color: #000; line-height: 1.25; }
+  .cert-tile .ct-issuer { color: #404040; }
+
+  /* photo viewer */
+  .viewer .win-body { padding: 6px; display: flex; flex-direction: column; }
+  .pv-stage {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    place-items: center;
+    padding: 8px;
+    background: #808080;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
+                inset -2px -2px #dfdfdf, inset 2px 2px #404040;
+  }
+  .pv-stage img {
+    height: min(52vh, 560px);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+    background: #fff;
+    border: 1px solid #0a0a0a;
+  }
+  .pv-cap { padding: 6px 8px 2px; }
+  .pv-cap .pv-title { font-weight: 700; margin: 0 0 2px; }
+  .pv-cap .pv-sub { color: #303030; margin: 0; }
+  .pv-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 2px 0;
+  }
+  .pv-bar .pv-pos { min-width: 34px; text-align: center; }
+  .pv-bar .pv-gap { margin-left: auto; }
+  .pv-bar .btn { text-decoration: none; }
+
+  /* notepad-ish bodies */
+  .paper h2 { font-size: 12px; margin: 0 0 2px; }
+  .paper .rule { color: #808080; margin: 6px 0; }
+  .paper p { margin: 0 0 6px; }
+
+  /* mail */
+  .field { display: grid; grid-template-columns: 62px 1fr; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .field label { text-align: right; color: #404040; }
+  .field .val {
+    padding: 3px 6px;
+    overflow-wrap: anywhere;
+    box-shadow: inset 1px 1px #0a0a0a, inset -1px -1px #fff,
+                inset 2px 2px #808080, inset -2px -2px #dfdfdf;
+    background: #fff;
+  }
+  .mail-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .mail-actions .btn { text-decoration: none; }
+
+  /* welcome avatar */
+  .who-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .avatar { width: 64px; height: 64px; padding: 3px; flex: none; }
+
+  /* repo viewer windows */
+  .repo-card { background: #fff; padding: 8px 10px 9px; }
+  .rc-top { display: flex; align-items: center; gap: 7px; }
+  .rc-top .ico { width: 16px; height: 16px; }
+  .rc-top b { color: #0969da; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rc-badge { margin-left: auto; flex: none; padding: 0 7px; border: 1px solid #808080; border-radius: 9px; font-size: 10px; color: #404040; }
+  .rc-meta { display: flex; align-items: center; gap: 5px; margin-top: 5px; color: #57606a; }
+  .rc-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1px solid #00000022; }
+  .repo-head { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; }
+  .repo-head h3 { margin: 0; font-size: 15px; }
+  .repo-head img { width: 30px; height: 30px; object-fit: contain; }
+  .repo-desc { margin: 0 0 4px; }
+  .repo-detail { margin: 0 0 8px; color: #404040; }
+  .repo-meta { display: grid; grid-template-columns: 74px 1fr; gap: 3px 10px; margin: 8px 0; }
+  .repo-meta dt { color: #606060; }
+  .repo-meta dd { margin: 0; }
+  .repo-topics { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+  .repo-topics span { padding: 1px 6px; background: #dfdfdf; box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; }
+  .repo-shots { display: flex; gap: 6px; margin: 8px 0; }
+  .repo-shots img { width: 31%; border: 1px solid #808080; display: block; }
+  .repo-arch { display: inline-block; padding: 1px 6px; background: #ffd867; box-shadow: inset 1px 1px #fff, inset -1px -1px #8a6d1a; }
+
+  /* ---------- taskbar ---------- */
+  #taskbar {
+    position: fixed;
+    inset: auto 0 0 0;
+    height: var(--task-h);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 4px;
+    background: #c0c0c0;
+    box-shadow: inset 0 1px #dfdfdf, inset 0 2px #fff;
+    z-index: 5000;
+  }
+  #startbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 24px;
+    padding: 0 8px 0 5px;
+    font-weight: 700;
+    flex: none;
+  }
+  #startbtn .ico { width: 18px; height: 16px; }
+  #taskbtns {
+    flex: 1;
+    display: flex;
+    gap: 3px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .taskbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: 0 1 160px;
+    min-width: 0;
+    height: 24px;
+    padding: 0 8px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .taskbtn .ico { width: 16px; height: 16px; flex: none; }
+  .taskbtn .t { overflow: hidden; text-overflow: ellipsis; }
+  .taskbtn.on {
+    font-weight: 700;
+    box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
+                inset -2px -2px #dfdfdf, inset 2px 2px #808080;
+    background-image:
+      linear-gradient(45deg, rgba(255,255,255,.45) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.45) 75%),
+      linear-gradient(45deg, rgba(255,255,255,.45) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.45) 75%);
+    background-size: 2px 2px;
+    background-position: 0 0, 1px 1px;
+  }
+  #clock {
+    flex: none;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    padding: 0 10px;
+    box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
+  }
+
+  /* ---------- start menu ---------- */
+  #startmenu {
+    position: fixed;
+    left: 2px;
+    bottom: var(--task-h);
+    display: flex;
+    z-index: 6000;
+    background: #c0c0c0;
+    padding: 3px;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf,
+                inset -2px -2px #808080, inset 2px 2px #fff;
+  }
+  #startmenu[hidden] { display: none; }
+  .sm-banner {
+    width: 24px;
+    background: linear-gradient(180deg, #1084d0, #000080);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 6px 0;
+  }
+  .sm-banner span {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    color: #c0c0c0;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: .06em;
+  }
+  .sm-banner b { color: #fff; font-weight: 700; }
+  .sm-items { display: flex; flex-direction: column; min-width: 172px; }
+  .sm-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 22px 6px 8px;
+    border: 0;
+    background: none;
+    text-align: left;
+    white-space: nowrap;
+    color: #000;
+    text-decoration: none;
+  }
+  .sm-item .ico { width: 20px; height: 20px; flex: none; }
+  .sm-item:hover, .sm-item:focus-visible { background: #000080; color: #fff; outline: none; }
+  .sm-sep { height: 0; margin: 3px 2px; border-top: 1px solid #808080; border-bottom: 1px solid #fff; }
+
+  /* ---------- shutdown ---------- */
+  #shutdown {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    color: #ff7f27;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: clamp(15px, 4.5vw, 22px);
+    padding: 20px;
+  }
+  #shutdown[hidden] { display: none; }
+  #shutdown small { display: block; margin-top: 18px; color: #7a4015; font-size: 12px; }
+
+  /* ---------- small screens ---------- */
+  @media (max-width: 600px) {
+    .win:not(.max) { left: 6px !important; right: 6px; width: auto !important; }
+    #icons { gap: 10px; }
+    .icon { width: 68px; }
+    .taskbtn { flex-basis: 120px; }
+    .certgrid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 380px) {
+    .taskbtn .t { display: none; }
+    .taskbtn { flex: 0 0 auto; }
+  }
+
+  /* ---------- motion ---------- */
+  @media (prefers-reduced-motion: no-preference) {
+    .win { animation: winpop .12s ease-out; }
+    #startmenu { animation: menupop .1s ease-out; }
+    @keyframes winpop { from { transform: scale(.97); opacity: .5; } }
+    @keyframes menupop { from { transform: translateY(6px); opacity: .5; } }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<main id="desktop" aria-label="Desktop">
+
+  <div id="icons" role="group" aria-label="Desktop icons">
+    <button class="icon" data-win="welcome">
+      <span class="ico" data-ico="computer"></span>
+      <span class="lbl">Welcome</span>
+    </button>
+    <button class="icon" data-win="projects">
+      <span class="ico" data-ico="folder"></span>
+      <span class="lbl">My Projects</span>
+    </button>
+    <button class="icon" data-win="certificates">
+      <span class="ico" data-ico="photos"></span>
+      <span class="lbl">My Certificates</span>
+    </button>
+    <button class="icon" data-win="about">
+      <span class="ico" data-ico="page"></span>
+      <span class="lbl">README.txt</span>
+    </button>
+    <button class="icon" data-win="contact">
+      <span class="ico" data-ico="mail"></span>
+      <span class="lbl">Mail</span>
+    </button>
+  </div>
+
+  <!-- ============ WELCOME ============ -->
+  <section class="win active" id="w-welcome" aria-labelledby="t-welcome"
+           style="left: 90px; top: 34px; width: 440px;">
+    <div class="titlebar">
+      <span class="ico tb-icon" data-ico="computer"></span>
+      <span class="tb-title" id="t-welcome">Welcome</span>
+      <div class="tb-btns">
+        <button class="tb-btn" data-act="min" aria-label="Minimize">_</button>
+        <button class="tb-btn" data-act="max" aria-label="Maximize">&#9633;</button>
+        <button class="tb-btn" data-act="close" aria-label="Close">&times;</button>
+      </div>
+    </div>
+    <div class="win-body">
+      <div class="who-row">
+        <img class="avatar sunken" src="https://avatars.githubusercontent.com/u/164162779?v=4&amp;s=128" alt="GitHub avatar of ImAno177" width="64" height="64">
+        <div>
+          <h1>ImAno177</h1>
+          <p class="who">Duong Bach Chi &middot; Ho Chi Minh City</p>
+        </div>
+      </div>
+      <p class="tag">&ldquo;A quiet study &mdash; a room for things learned.&rdquo;</p>
+      <hr class="sep">
+      <p>Security-focused builder: cloud security, Web3 security, Android security, program analysis.</p>
+      <div class="quick">
+        <button class="btn" data-open="projects"><span class="ico" data-ico="folder"></span>My Projects</button>
+        <button class="btn" data-open="certificates"><span class="ico" data-ico="photos"></span>My Certificates</button>
+        <button class="btn" data-open="about"><span class="ico" data-ico="page"></span>README.txt</button>
+        <button class="btn" data-open="contact"><span class="ico" data-ico="mail"></span>Mail</button>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span class="status-cell">Ready</span>
+      <span class="status-cell r">Double-click a desktop icon</span>
+    </div>
+  </section>
+
+  <!-- ============ PROJECTS ============ -->
+  <section class="win" id="w-projects" aria-labelledby="t-projects" hidden
+           style="left: 130px; top: 70px; width: 480px;">
+    <div class="titlebar">
+      <span class="ico tb-icon" data-ico="folder"></span>
+      <span class="tb-title" id="t-projects">My Projects</span>
+      <div class="tb-btns">
+        <button class="tb-btn" data-act="min" aria-label="Minimize">_</button>
+        <button class="tb-btn" data-act="max" aria-label="Maximize">&#9633;</button>
+        <button class="tb-btn" data-act="close" aria-label="Close">&times;</button>
+      </div>
+    </div>
+    <div class="menubar" aria-hidden="true"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>
+    <div class="win-body sunken" style="padding: 4px;">
+      <ul class="filelist" id="repolist"></ul>
+    </div>
+    <div class="statusbar">
+      <span class="status-cell" id="repocount">8 object(s)</span>
+      <span class="status-cell r">C:\ImAno177\github &middot; &#9733; = pinned</span>
+    </div>
+  </section>
+
+  <!-- ============ CERTIFICATES ============ -->
+  <section class="win" id="w-certificates" aria-labelledby="t-certificates" hidden
+           style="left: 60px; top: 50px; width: 600px;">
+    <div class="titlebar">
+      <span class="ico tb-icon" data-ico="photos"></span>
+      <span class="tb-title" id="t-certificates">My Certificates</span>
+      <div class="tb-btns">
+        <button class="tb-btn" data-act="min" aria-label="Minimize">_</button>
+        <button class="tb-btn" data-act="max" aria-label="Maximize">&#9633;</button>
+        <button class="tb-btn" data-act="close" aria-label="Close">&times;</button>
+      </div>
+    </div>
+    <div class="menubar" aria-hidden="true"><span>File</span><span>Edit</span><span>View</span><span>Help</span></div>
+    <div class="win-body" style="padding: 10px;">
+      <div class="certgrid">
+        <button class="cert-tile" data-cert="ibm">
+          <img src="./certs/ibm-compliance.webp"
+               alt="IBM Cybersecurity Compliance Framework certificate" loading="lazy">
+          <span class="ct-name">Cybersecurity Compliance Framework</span>
+          <span class="ct-issuer">IBM &middot; Sep 2026</span>
+        </button>
+        <button class="cert-tile" data-cert="google">
+          <img src="./certs/google-cybersecurity.webp"
+               alt="Google Cybersecurity Professional Certificate" loading="lazy">
+          <span class="ct-name">Cybersecurity Professional Certificate</span>
+          <span class="ct-issuer">Google &middot; Sep 2026</span>
+        </button>
+        <button class="cert-tile" data-cert="bsi">
+          <img src="./certs/bsi-ai-risk.webp"
+               alt="BSI AI Technical Risk Controls Specialization certificate" loading="lazy">
+          <span class="ct-name">AI Technical Risk Controls</span>
+          <span class="ct-issuer">BSI &middot; Sep 2026</span>
+        </button>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span class="status-cell">3 object(s)</span>
+      <span class="status-cell r">Click a certificate to view it</span>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT / SKILLS ============ -->
+  <section class="win" id="w-about" aria-labelledby="t-about" hidden
+           style="left: 170px; top: 96px; width: 440px;">
+    <div class="titlebar">
+      <span class="ico tb-icon" data-ico="page"></span>
+      <span class="tb-title" id="t-about">README.txt - Notepad</span>
+      <div class="tb-btns">
+        <button class="tb-btn" data-act="min" aria-label="Minimize">_</button>
+        <button class="tb-btn" data-act="max" aria-label="Maximize">&#9633;</button>
+        <button class="tb-btn" data-act="close" aria-label="Close">&times;</button>
+      </div>
+    </div>
+    <div class="menubar" aria-hidden="true"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
+    <div class="win-body sunken paper">
+      <h2>README.TXT</h2>
+      <div class="rule">==================================================</div>
+      <p>NAME&nbsp;&nbsp;&nbsp;: ImAno177 (Duong Bach Chi)</p>
+      <p>ROLE&nbsp;&nbsp;&nbsp;: security-focused builder</p>
+      <p>FOCUS&nbsp;&nbsp;: cloud security, Web3 security,</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Android security, program analysis</p>
+      <div class="rule">--------------------------------------------------</div>
+      <p>LANGUAGES : Go, C++, Python, Kotlin</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;also HTML/CSS/Markdown</p>
+      <p>ENV&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: Windows // Linux, VS Code</p>
+      <p>WALLPAPER: Bliss-style hill (Etyek, HU),</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CC BY-SA 4.0 via Wikimedia Commons</p>
+      <div class="rule">--------------------------------------------------</div>
+      <p>GITHUB&nbsp;&nbsp;: 25 public repos &middot; 6 pinned</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;achievements: Pull Shark &times;2, YOLO, Quickdraw</p>
+      <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://github.com/ImAno177" target="_blank" rel="noopener">github.com/ImAno177</a></p>
+      <div class="rule">==================================================</div>
+      <p>EOF</p>
+    </div>
+    <div class="statusbar">
+      <span class="status-cell">Ln 1, Col 1</span>
+      <span class="status-cell r">100%</span>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT / MAIL ============ -->
+  <section class="win" id="w-contact" aria-labelledby="t-contact" hidden
+           style="left: 110px; top: 120px; width: 420px;">
+    <div class="titlebar">
+      <span class="ico tb-icon" data-ico="mail"></span>
+      <span class="tb-title" id="t-contact">Mail - New Message</span>
+      <div class="tb-btns">
+        <button class="tb-btn" data-act="min" aria-label="Minimize">_</button>
+        <button class="tb-btn" data-act="max" aria-label="Maximize">&#9633;</button>
+        <button class="tb-btn" data-act="close" aria-label="Close">&times;</button>
+      </div>
+    </div>
+    <div class="win-body">
+      <div class="field">
+        <label id="f-to">To:</label>
+        <div class="val" aria-labelledby="f-to"><a href="mailto:bachchi17705@gmail.com">bachchi17705@gmail.com</a></div>
+      </div>
+      <div class="field">
+        <label id="f-disc">Discord:</label>
+        <div class="val" aria-labelledby="f-disc">imbot177</div>
+      </div>
+      <div class="field">
+        <label id="f-gh">GitHub:</label>
+        <div class="val" aria-labelledby="f-gh"><a href="https://github.com/ImAno177" target="_blank" rel="noopener">github.com/ImAno177</a></div>
+      </div>
+      <hr class="sep">
+      <div class="sunken" style="padding: 8px; min-height: 60px;">
+        <p style="margin: 0;">Hi Chi Bach,</p>
+        <p style="margin: 6px 0 0;">&ldquo;A quiet study &mdash; a room for things learned.&rdquo;</p>
+      </div>
+      <div class="mail-actions">
+        <a class="btn" href="mailto:bachchi17705@gmail.com"><strong>Send</strong></a>
+        <button class="btn" data-close>Cancel</button>
+      </div>
+    </div>
+    <div class="statusbar">
+      <span class="status-cell">Ready to send</span>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ START MENU ============ -->
+<div id="startmenu" hidden>
+  <div class="sm-banner" aria-hidden="true"><span><b>ImAno</b>177</span></div>
+  <div class="sm-items" role="menu" aria-label="Start menu">
+    <button class="sm-item" role="menuitem" data-open="welcome"><span class="ico" data-ico="computer"></span>Welcome</button>
+    <button class="sm-item" role="menuitem" data-open="projects"><span class="ico" data-ico="folder"></span>My Projects</button>
+    <button class="sm-item" role="menuitem" data-open="certificates"><span class="ico" data-ico="photos"></span>My Certificates</button>
+    <button class="sm-item" role="menuitem" data-open="about"><span class="ico" data-ico="page"></span>README.txt</button>
+    <button class="sm-item" role="menuitem" data-open="contact"><span class="ico" data-ico="mail"></span>Mail</button>
+    <div class="sm-sep" aria-hidden="true"></div>
+    <a class="sm-item" role="menuitem" href="https://github.com/ImAno177" target="_blank" rel="noopener"><span class="ico" data-ico="globe"></span>GitHub Profile &#8599;</a>
+    <div class="sm-sep" aria-hidden="true"></div>
+    <button class="sm-item" role="menuitem" id="sm-shutdown"><span class="ico" data-ico="power"></span>Shut Down...</button>
+  </div>
+</div>
+
+<!-- ============ TASKBAR ============ -->
+<footer id="taskbar">
+  <button id="startbtn" class="btn" aria-haspopup="menu" aria-expanded="false">
+    <span class="ico" data-ico="flag"></span>Start
+  </button>
+  <div id="taskbtns" role="group" aria-label="Open windows"></div>
+  <div id="clock" title="">--:--</div>
+</footer>
+
+<!-- ============ SHUTDOWN ============ -->
+<div id="shutdown" hidden>
+  <div>
+    It's now safe to turn off<br>your computer.
+    <small>press any key or click to restart</small>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- pixel icons ---------- */
+  var ICONS = {
+    computer: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><rect x="3" y="4" width="26" height="18" fill="#c0c0c0" stroke="#404040"/><rect x="6" y="7" width="20" height="12" fill="#008080"/><rect x="12" y="23" width="8" height="2" fill="#808080"/><rect x="8" y="25" width="16" height="4" fill="#c0c0c0" stroke="#404040"/><rect x="9" y="8" width="8" height="1" fill="#fff"/><rect x="9" y="10" width="12" height="1" fill="#ffd867"/></svg>',
+    folder: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><path d="M2 7 h11 l3 3 h14 v16 h-28 z" fill="#ffd867" stroke="#8a6d1a" stroke-width="1"/><path d="M2 7 h11 l3 3 h14" fill="none" stroke="#fff4c4" stroke-width="1"/><rect x="4" y="13" width="24" height="1" fill="#e8b93c"/></svg>',
+    photos: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><rect x="3" y="6" width="26" height="21" fill="#dff0ff" stroke="#404040"/><rect x="3" y="6" width="26" height="3" fill="#1084d0"/><circle cx="11" cy="13" r="2.5" fill="#fbc926" stroke="#8a6d1a"/><path d="M3 24 l8-8 6 6 5-5 7 7 v3 h-26 z" fill="#3aa655"/><path d="M3 24 l8-8 2 2 -10 9z" fill="#5ac07a"/></svg>',
+    flag: '<svg viewBox="0 0 20 16" shape-rendering="crispEdges" width="100%" height="100%"><rect x="2" y="2" width="8" height="6" fill="#e0362c"/><rect x="11" y="3" width="8" height="6" fill="#3aa655"/><rect x="1" y="8" width="8" height="6" fill="#2d7cd6"/><rect x="10" y="9" width="8" height="6" fill="#fbc926"/><path d="M2 2 l-1 -1 v14 l1 -1 z" fill="#0a0a0a"/></svg>',
+    page: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><path d="M8 2 h11 l5 5 v23 h-16 z" fill="#fff" stroke="#404040"/><path d="M19 2 v5 h5" fill="#dfdfdf" stroke="#404040" stroke-width="1"/><rect x="11" y="11" width="10" height="1" fill="#808080"/><rect x="11" y="14" width="10" height="1" fill="#808080"/><rect x="11" y="17" width="10" height="1" fill="#808080"/><rect x="11" y="20" width="7" height="1" fill="#808080"/></svg>',
+    mail: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><rect x="3" y="7" width="26" height="18" fill="#fff" stroke="#404040"/><path d="M3 7 l13 9 13-9" fill="none" stroke="#808080" stroke-width="1"/><path d="M3 25 l9-7 M29 25 l-9-7" stroke="#dfdfdf" stroke-width="1"/></svg>',
+    power: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><circle cx="16" cy="17" r="10" fill="none" stroke="#404040" stroke-width="2"/><rect x="15" y="4" width="2" height="12" fill="#404040"/><rect x="13" y="4" width="6" height="2" fill="#404040"/></svg>',
+    droid: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><rect x="7" y="10" width="18" height="14" rx="2" fill="#3ddc84" stroke="#1e7a4a"/><rect x="9" y="6" width="14" height="6" rx="3" fill="#3ddc84" stroke="#1e7a4a"/><rect x="11" y="8" width="2" height="2" fill="#fff"/><rect x="19" y="8" width="2" height="2" fill="#fff"/><path d="M10 4 l3 3 M22 4 l-3 3" stroke="#1e7a4a" stroke-width="1"/><rect x="4" y="12" width="3" height="9" fill="#3ddc84" stroke="#1e7a4a"/><rect x="25" y="12" width="3" height="9" fill="#3ddc84" stroke="#1e7a4a"/></svg>',
+    shield: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><path d="M16 2 l12 4 v9 c0 8 -5 13 -12 15 c-7 -2 -12 -7 -12 -15 v-9 z" fill="#2d7cd6" stroke="#0a3a70"/><path d="M16 5 l9 3 v7 c0 6 -4 10 -9 12 z" fill="#7db8ec"/><path d="M10 15 l4 4 8 -8" fill="none" stroke="#fff" stroke-width="2"/></svg>',
+    spider: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><rect x="12" y="12" width="8" height="8" fill="#404040"/><rect x="14" y="6" width="4" height="6" fill="#404040"/><path d="M12 12 l-8 -6 M12 15 l-10 -1 M12 18 l-10 2 M13 20 l-7 7 M20 12 l8 -6 M20 15 l10 -1 M20 18 l10 2 M19 20 l7 7" stroke="#404040" stroke-width="1"/><rect x="14" y="14" width="2" height="2" fill="#e0362c"/></svg>',
+    globe: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><circle cx="16" cy="16" r="12" fill="#3aa6d0" stroke="#1a4a60"/><ellipse cx="16" cy="16" rx="5" ry="12" fill="none" stroke="#dff2f8" stroke-width="1"/><path d="M4.5 12 h23 M4.5 20 h23" stroke="#dff2f8" stroke-width="1"/></svg>',
+    wrench: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><path d="M22 3 a7 7 0 0 0-8.7 8.7 L5 20 l6 6 8.3-8.3 A7 7 0 0 0 28 9 l-4.5 4.5 -3.5-.8 -.8-3.5 Z" fill="#909090" stroke="#404040"/></svg>',
+    eye: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><ellipse cx="16" cy="16" rx="13" ry="8" fill="#fff" stroke="#404040"/><circle cx="16" cy="16" r="5" fill="#2d7cd6" stroke="#0a3a70"/><circle cx="16" cy="16" r="2" fill="#0a0a0a"/></svg>',
+    eth: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><path d="M16 3 L25 16 L16 21 L7 16 Z" fill="#8a9cf0" stroke="#3a4a80"/><path d="M16 22 L25 16 L16 29 L7 16 Z" fill="#5a6cb0" stroke="#3a4a80"/></svg>'
+  };
+  document.querySelectorAll("[data-ico]").forEach(function (el) {
+    el.innerHTML = ICONS[el.getAttribute("data-ico")] || "";
+    el.setAttribute("aria-hidden", "true");
+  });
+
+  /* ---------- window manager ---------- */
+  var IDS = ["welcome", "projects", "certificates", "about", "contact"];
+  var taskbtns = document.getElementById("taskbtns");
+  var zTop = 10;
+  var activeId = null;
+  var openWins = {};   /* id -> { el, btn, prevRect, opener } */
+
+  function winEl(id) { return document.getElementById("w-" + id); }
+
+  function centerWindow(el) {
+    var deskH = window.innerHeight - 32; /* taskbar */
+    var w = el.offsetWidth, h = el.offsetHeight;
+    el.style.left = Math.max(4, Math.round((window.innerWidth - w) / 2)) + "px";
+    el.style.top = Math.max(4, Math.round((deskH - h) / 2) - 6) + "px";
+  }
+
+  function focusWindow(id) {
+    var rec = openWins[id];
+    if (!rec) return;
+    rec.el.classList.remove("min");
+    rec.el.hidden = false;
+    rec.el.style.zIndex = ++zTop;
+    activeId = id;
+    Object.keys(openWins).forEach(function (w) {
+      var r = openWins[w];
+      var on = w === id;
+      r.el.classList.toggle("active", on);
+      r.btn.classList.toggle("on", on);
+      r.btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  function focusTop() {
+    var best = null, bestZ = -1;
+    Object.keys(openWins).forEach(function (id) {
+      var r = openWins[id];
+      if (r.el.classList.contains("min")) return;
+      var z = parseInt(r.el.style.zIndex || "0", 10);
+      if (z > bestZ) { bestZ = z; best = id; }
+    });
+    if (best) focusWindow(best); else activeId = null;
+  }
+
+  function openWindow(id, opener) {
+    var el = winEl(id);
+    if (!el) return;
+    if (!openWins[id]) {
+      var btn = document.createElement("button");
+      btn.className = "btn taskbtn";
+      btn.setAttribute("aria-pressed", "false");
+      btn.innerHTML = '<span class="ico">' + el.querySelector(".tb-icon").innerHTML +
+                      '</span><span class="t"></span>';
+      btn.querySelector(".t").textContent = el.querySelector(".tb-title").textContent;
+      btn.addEventListener("click", function () { toggleTask(id); });
+      taskbtns.appendChild(btn);
+      openWins[id] = { el: el, btn: btn, opener: opener || null };
+      el.hidden = false;
+      el.tabIndex = -1;
+      centerWindow(el);
+      el.style.zIndex = ++zTop;
+    } else {
+      openWins[id].el.classList.remove("min");
+    }
+    if (opener) openWins[id].opener = opener;
+    focusWindow(id);
+  }
+
+  function closeWindow(id) {
+    var rec = openWins[id];
+    if (!rec) return;
+    rec.el.hidden = true;
+    rec.btn.remove();
+    delete openWins[id];
+    if (activeId === id) focusTop();
+    if (rec.opener && document.contains(rec.opener)) rec.opener.focus();
+  }
+
+  function minimizeWindow(id) {
+    var rec = openWins[id];
+    if (!rec) return;
+    rec.el.classList.add("min");
+    rec.btn.classList.remove("on");
+    rec.btn.setAttribute("aria-pressed", "false");
+    if (activeId === id) focusTop();
+  }
+
+  function toggleTask(id) {
+    var rec = openWins[id];
+    if (!rec) return;
+    if (rec.el.classList.contains("min")) focusWindow(id);
+    else if (activeId === id) minimizeWindow(id);
+    else focusWindow(id);
+  }
+
+  function toggleMax(id) {
+    var rec = openWins[id];
+    if (!rec) return;
+    var el = rec.el;
+    if (el.classList.contains("max")) {
+      el.classList.remove("max");
+      if (rec.prevRect) {
+        el.style.left = rec.prevRect.left;
+        el.style.top = rec.prevRect.top;
+        el.style.width = rec.prevRect.width;
+        el.style.height = rec.prevRect.height || "";
+      }
+    } else {
+      rec.prevRect = {
+        left: el.style.left, top: el.style.top,
+        width: el.style.width, height: el.style.height
+      };
+      el.classList.add("max");
+    }
+    focusWindow(id);
+  }
+
+  /* wire up each window: drag + buttons + focus */
+  function wireWindow(id) {
+    var el = winEl(id);
+    var bar = el.querySelector(".titlebar");
+
+    el.addEventListener("pointerdown", function () {
+      if (openWins[id]) focusWindow(id);
+    });
+
+    bar.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0) return;
+      if (e.target.closest(".tb-btn")) return;
+      if (el.classList.contains("max")) return;
+      if (!openWins[id]) return;
+      e.preventDefault();
+      var r = el.getBoundingClientRect();
+      var dx = e.clientX - r.left, dy = e.clientY - r.top;
+      function move(ev) {
+        var x = ev.clientX - dx, y = ev.clientY - dy;
+        x = Math.max(-r.width + 80, Math.min(x, window.innerWidth - 80));
+        y = Math.max(0, Math.min(y, window.innerHeight - 60));
+        el.style.left = x + "px";
+        el.style.top = y + "px";
+      }
+      function up() {
+        bar.removeEventListener("pointermove", move);
+        bar.removeEventListener("pointerup", up);
+        bar.removeEventListener("pointercancel", up);
+      }
+      bar.addEventListener("pointermove", move);
+      bar.addEventListener("pointerup", up);
+      bar.addEventListener("pointercancel", up);
+      bar.setPointerCapture && bar.setPointerCapture(e.pointerId);
+    });
+
+    el.querySelectorAll("[data-act]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var act = b.getAttribute("data-act");
+        if (act === "close") closeWindow(id);
+        else if (act === "min") minimizeWindow(id);
+        else if (act === "max") toggleMax(id);
+      });
+    });
+  }
+  IDS.forEach(wireWindow);
+
+  /* ---------- repo showcase ---------- */
+  var RAW_PR = "https://raw.githubusercontent.com/ImAno177/PaperReader/main/docs/screenshots/";
+  var REPOS = [
+    { key: "mempool-trieguard", name: "mempool-trieguard", ico: "eth", lang: "Go + Python", color: "#3572a5", pin: 1, pushed: "Jun 2026",
+      desc: "Pre-confirmation Ethereum address-poisoning detection.",
+      detail: "Time-aware trusted counterparties indexed in prefix/suffix tries screen pending ERC-20 transfers and emit explainable alerts for lookalike recipients. Research prototype with paper artifacts.",
+      url: "https://github.com/ImAno177/mempool-trieguard" },
+    { key: "paperreader", name: "PaperReader", ico: "droid", lang: "Kotlin", color: "#a97bff", pin: 1, pushed: "Sep 2026",
+      desc: "Local-first Android reader for discovering and reading scientific papers.",
+      detail: "Searches Semantic Scholar, arXiv and Europe PMC, with Crossref for exact DOI metadata. Source and theme providers ship as separate APKs over a versioned AIDL contract. Android 9+, Apache-2.0.",
+      url: "https://github.com/ImAno177/PaperReader",
+      shots: ["library", "mobile-reader", "discover"] },
+    { key: "paperreader-site", name: "paperreader-site", ico: "globe", lang: "Astro + CSS", color: "#ff5a03", pin: 1, pushed: "Sep 2026",
+      desc: "PaperReader Field Notes — an emulator-backed Astro showcase for the app.",
+      detail: "Public landing page and task-oriented documentation (Astro 7 + Starlight, GSAP). The Android repository stays the source of truth for product behavior.",
+      url: "https://github.com/ImAno177/paperreader-site",
+      demo: "https://imano177.github.io/paperreader-site/" },
+    { key: "spider", name: "spider", ico: "spider", lang: "Python", color: "#3572a5", pin: 1, pushed: "Sep 2026",
+      desc: "Solidity CPG extractor — cross-contract control and data flow.",
+      detail: "Compiles with an installed solc, builds one typed code property graph from Slither AST/CFG/SlithIR, validates it, and writes deterministic NetworkX JSON plus DOT views.",
+      url: "https://github.com/ImAno177/spider",
+      logo: "https://raw.githubusercontent.com/ImAno177/spider/main/logo.svg",
+      topics: ["static-analysis", "solidity", "code-property-graph", "slither", "smart-contracts"] },
+    { key: "misconfig-remediate", name: "misconfig-remediate", ico: "wrench", lang: "Python", color: "#3572a5", pin: 1, pushed: "Jan 2026", archived: 1,
+      desc: "Misconfiguration remediation tooling.",
+      detail: "Repository archived — kept read-only as a record of the work.",
+      url: "https://github.com/ImAno177/misconfig-remediate" },
+    { key: "portfolio", name: "portfolio", ico: "computer", lang: "TypeScript", color: "#3178c6", pin: 1, pushed: "Sep 2026",
+      desc: "A ricing-inspired developer portfolio for GitHub Pages.",
+      detail: "This site. Astro + TypeScript + Three.js, static output on GitHub Pages.",
+      url: "https://github.com/ImAno177/portfolio",
+      demo: "https://imano177.github.io/portfolio/" },
+    { key: "android-security-lab", name: "android-security-lab", ico: "shield", lang: "Reports + tooling", color: "#808080", pushed: "Aug 2026",
+      desc: "Android pentesting and secure-programming labs (UIT coursework).",
+      detail: "Static analysis, ADB/Logcat/SQLite evidence collection, Smali patching, Frida runtime hooks, ProGuard verification — sanitized methodology plus the two original PDF reports.",
+      url: "https://github.com/ImAno177/android-security-lab",
+      topics: ["android-security", "apk-analysis", "frida", "mobile-security", "digital-forensics"] },
+    { key: "observe-lab", name: "observe-lab", ico: "eye", lang: "JavaScript", color: "#f1e05a", pushed: "Sep 2026",
+      desc: "Local-only demo of what a page can read from a browser.",
+      detail: "Canvas, WebGL, screen, CPU/memory hints, fonts, CSS media, WebAudio, WebRTC, pointer/scroll — rendered locally. No tracking score, no fingerprint upload.",
+      url: "https://github.com/ImAno177/observe-lab",
+      demo: "https://imano177.github.io/observe-lab/" }
+  ];
+
+  var repolist = document.getElementById("repolist");
+  REPOS.forEach(function (r) {
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.className = "file-row";
+    b.setAttribute("data-repo", r.key);
+    b.innerHTML = '<span class="ico" aria-hidden="true">' + (ICONS[r.ico] || "") + '</span>' +
+                  '<span class="name"></span><span class="desc"></span>';
+    b.querySelector(".name").textContent = r.name;
+    b.querySelector(".desc").textContent = r.desc;
+    var meta = document.createElement("span");
+    meta.className = "meta";
+    meta.textContent = " " + r.lang + " · " + r.pushed + (r.archived ? " · archived" : "");
+    b.querySelector(".name").appendChild(meta);
+    if (r.pin) {
+      var p = document.createElement("span");
+      p.className = "pin";
+      p.textContent = " ★";
+      p.title = "Pinned on GitHub";
+      b.querySelector(".name").appendChild(p);
+    }
+    li.appendChild(b);
+    repolist.appendChild(li);
+  });
+  document.getElementById("repocount").textContent = REPOS.length + " object(s)";
+
+  function repoByKey(key) {
+    for (var i = 0; i < REPOS.length; i++) if (REPOS[i].key === key) return REPOS[i];
+    return null;
+  }
+
+  function openRepo(key, opener) {
+    var r = repoByKey(key);
+    if (!r) return;
+    var id = "repo-" + key;
+    if (!winEl(id)) {
+      var el = document.createElement("section");
+      el.className = "win repo-win";
+      el.id = "w-" + id;
+      el.setAttribute("aria-labelledby", "t-" + id);
+      el.hidden = true;
+      el.style.width = "540px";
+      var shots = "";
+      if (r.shots) {
+        shots = '<div class="repo-shots">' + r.shots.map(function (s) {
+          return '<img src="' + RAW_PR + s + '.png" alt="PaperReader screenshot: ' + s + '" loading="lazy" onerror="this.style.display=\'none\'">';
+        }).join("") + '</div>';
+      }
+      var topics = r.topics ? '<div class="repo-topics">' + r.topics.map(function (t) {
+        return '<span>' + t + '</span>';
+      }).join("") + '</div>' : "";
+      var logo = r.logo ? '<img src="' + r.logo + '" alt="" onerror="this.style.display=\'none\'">' : "";
+      el.innerHTML =
+        '<div class="titlebar"><span class="ico tb-icon">' + ICONS[r.ico] + '</span>' +
+        '<span class="tb-title" id="t-' + id + '">' + r.name + ' — GitHub</span>' +
+        '<div class="tb-btns">' +
+        '<button class="tb-btn" data-act="min" aria-label="Minimize">_</button>' +
+        '<button class="tb-btn" data-act="max" aria-label="Maximize">&#9633;</button>' +
+        '<button class="tb-btn" data-act="close" aria-label="Close">&times;</button></div></div>' +
+        '<div class="menubar" aria-hidden="true"><span>File</span><span>View</span><span>Help</span></div>' +
+        '<div class="win-body">' +
+        '<div class="repo-card sunken"><div class="rc-top"><span class="ico">' + ICONS[r.ico] + '</span><b>ImAno177/' + r.name + '</b>' +
+        '<span class="rc-badge">' + (r.archived ? 'Public archive' : 'Public') + '</span></div>' +
+        '<div class="rc-meta"><span class="rc-dot" style="background:' + r.color + '"></span>' + r.lang +
+        ' &nbsp;&middot;&nbsp; Updated ' + r.pushed + (r.pin ? ' &nbsp;&middot;&nbsp; &#9733; Pinned' : '') + '</div></div>' +
+        '<div class="repo-head"><h3>' + r.name + '</h3>' + logo +
+        (r.archived ? '<span class="repo-arch">Archived</span>' : '') + '</div>' +
+        '<p class="repo-desc"><strong>' + r.desc + '</strong></p>' +
+        '<p class="repo-detail">' + r.detail + '</p>' +
+        '<dl class="repo-meta"><dt>Language</dt><dd>' + r.lang + '</dd>' +
+        '<dt>Last push</dt><dd>' + r.pushed + '</dd>' +
+        '<dt>Source</dt><dd>github.com/ImAno177/' + r.name + '</dd></dl>' +
+        topics + shots +
+        '<div class="mail-actions"><a class="btn" href="' + r.url + '" target="_blank" rel="noopener"><strong>Open on GitHub &#8599;</strong></a>' +
+        (r.demo ? '<a class="btn" href="' + r.demo + '" target="_blank" rel="noopener">Live site &#8599;</a>' : '') +
+        '</div></div>' +
+        '<div class="statusbar"><span class="status-cell">github.com/ImAno177/' + r.name + '</span><span class="status-cell r">repo</span></div>';
+      document.getElementById("desktop").appendChild(el);
+      wireWindow(id);
+    }
+    openWindow(id, opener);
+  }
+
+  /* ---------- certificate photo viewer ---------- */
+  var CERT_DIR = "./certs/";
+  var CERTS = [
+    { key: "ibm", img: "ibm-compliance.webp",
+      title: "Cybersecurity Compliance Framework, Standards & Regulations",
+      issuer: "IBM", issued: "September 11, 2026", cred: "Y8915IW7BKON",
+      verify: "https://coursera.org/share/3b7aef3efdfd559379d603aa671d2059" },
+    { key: "google", img: "google-cybersecurity.webp",
+      title: "Google Cybersecurity Professional Certificate",
+      issuer: "Google", issued: "September 16, 2026", cred: "QCAFQ8T2LGU7",
+      verify: "https://coursera.org/share/dc3ee9abc7399aa99c29561212168529" },
+    { key: "bsi", img: "bsi-ai-risk.webp",
+      title: "AI Technical Risk Controls Specialization",
+      issuer: "British Standards Institution", issued: "September 19, 2026", cred: "TPW0FB2QCIEP",
+      verify: "https://coursera.org/share/d313789af9f4051f86e54a629869791d" }
+  ];
+  var certIdx = 0;
+
+  function certByKey(key) {
+    for (var i = 0; i < CERTS.length; i++) if (CERTS[i].key === key) return i;
+    return -1;
+  }
+
+  function renderCert() {
+    var c = CERTS[certIdx];
+    var el = winEl("certview");
+    el.querySelector(".pv-stage img").src = CERT_DIR + c.img;
+    el.querySelector(".pv-stage img").alt = c.issuer + " — " + c.title;
+    el.querySelector(".pv-title").textContent = c.title;
+    el.querySelector(".pv-sub").textContent = c.issuer + " · Issued " + c.issued + " · Credential " + c.cred;
+    el.querySelector(".pv-pos").textContent = (certIdx + 1) + " / " + CERTS.length;
+    el.querySelector("[data-pv-verify]").href = c.verify;
+    el.querySelector("[data-pv-full]").href = CERT_DIR + c.img;
+    el.querySelector(".tb-title").textContent = c.title + " — Photo Viewer";
+    var rec = openWins.certview;
+    if (rec) rec.btn.querySelector(".t").textContent = c.title;
+  }
+
+  function openCert(key, opener) {
+    var i = certByKey(key);
+    if (i < 0) return;
+    certIdx = i;
+    if (!winEl("certview")) {
+      var el = document.createElement("section");
+      el.className = "win viewer";
+      el.id = "w-certview";
+      el.setAttribute("aria-labelledby", "t-certview");
+      el.hidden = true;
+      el.style.width = "min(780px, 94vw)";
+      el.innerHTML =
+        '<div class="titlebar"><span class="ico tb-icon">' + ICONS.photos + '</span>' +
+        '<span class="tb-title" id="t-certview"></span>' +
+        '<div class="tb-btns">' +
+        '<button class="tb-btn" data-act="min" aria-label="Minimize">_</button>' +
+        '<button class="tb-btn" data-act="max" aria-label="Maximize">&#9633;</button>' +
+        '<button class="tb-btn" data-act="close" aria-label="Close">&times;</button></div></div>' +
+        '<div class="win-body"><div class="pv-stage"><img alt=""></div>' +
+        '<div class="pv-cap"><p class="pv-title"></p><p class="pv-sub"></p></div></div>' +
+        '<div class="pv-bar">' +
+        '<button class="btn pv-nav" data-pv="prev" aria-label="Previous certificate">&#9664;</button>' +
+        '<span class="pv-pos"></span>' +
+        '<button class="btn pv-nav" data-pv="next" aria-label="Next certificate">&#9654;</button>' +
+        '<span class="pv-gap"></span>' +
+        '<a class="btn" data-pv-verify href="#" target="_blank" rel="noopener">Verify on Coursera &#8599;</a>' +
+        '<a class="btn" data-pv-full href="#" target="_blank" rel="noopener">Full size &#8599;</a>' +
+        '</div>';
+      document.getElementById("desktop").appendChild(el);
+      wireWindow("certview");
+      el.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowLeft") { certIdx = (certIdx + CERTS.length - 1) % CERTS.length; renderCert(); }
+        else if (e.key === "ArrowRight") { certIdx = (certIdx + 1) % CERTS.length; renderCert(); }
+      });
+      el.querySelectorAll("[data-pv]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          certIdx = (certIdx + (b.getAttribute("data-pv") === "next" ? 1 : CERTS.length - 1)) % CERTS.length;
+          renderCert();
+        });
+      });
+    }
+    openWindow("certview", opener);
+    renderCert();
+  }
+
+  /* ---------- generic openers ---------- */
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-open]");
+    if (t) { openWindow(t.getAttribute("data-open"), t); closeStart(); }
+    var rp = e.target.closest("[data-repo]");
+    if (rp) openRepo(rp.getAttribute("data-repo"), rp);
+    var ct = e.target.closest("[data-cert]");
+    if (ct) openCert(ct.getAttribute("data-cert"), ct);
+    var c = e.target.closest("[data-close]");
+    if (c) closeWindow(c.closest(".win").id.slice(2));
+  });
+
+  /* ---------- desktop icons ---------- */
+  var icons = Array.prototype.slice.call(document.querySelectorAll(".icon"));
+  function selectIcon(ic) {
+    icons.forEach(function (i) { i.classList.toggle("selected", i === ic); });
+  }
+  icons.forEach(function (ic, idx) {
+    ic.addEventListener("click", function (e) {
+      var was = ic.classList.contains("selected");
+      selectIcon(ic);
+      /* keyboard click (detail 0), double click, or tap on already-selected icon */
+      if (e.detail === 0 || e.detail >= 2 || was) openWindow(ic.getAttribute("data-win"), ic);
+    });
+    ic.addEventListener("keydown", function (e) {
+      var n = null;
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") n = icons[(idx + 1) % icons.length];
+      else if (e.key === "ArrowUp" || e.key === "ArrowLeft") n = icons[(idx - 1 + icons.length) % icons.length];
+      else if (e.key === "Home") n = icons[0];
+      else if (e.key === "End") n = icons[icons.length - 1];
+      if (n) { e.preventDefault(); n.focus(); selectIcon(n); }
+    });
+  });
+  document.getElementById("desktop").addEventListener("pointerdown", function (e) {
+    if (!e.target.closest(".icon") && !e.target.closest(".win")) selectIcon(null);
+  });
+
+  /* ---------- start menu ---------- */
+  var startbtn = document.getElementById("startbtn");
+  var startmenu = document.getElementById("startmenu");
+  var shutdown = document.getElementById("shutdown");
+
+  function closeStart() {
+    startmenu.hidden = true;
+    startbtn.classList.remove("pressed");
+    startbtn.setAttribute("aria-expanded", "false");
+  }
+  startbtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var show = startmenu.hidden;
+    closeStart();
+    if (show) {
+      startmenu.hidden = false;
+      startbtn.classList.add("pressed");
+      startbtn.setAttribute("aria-expanded", "true");
+      var first = startmenu.querySelector(".sm-item");
+      if (first) first.focus();
+    }
+  });
+  document.addEventListener("pointerdown", function (e) {
+    if (!startmenu.hidden && !e.target.closest("#startmenu") && !e.target.closest("#startbtn")) closeStart();
+  });
+  startmenu.addEventListener("keydown", function (e) {
+    var items = Array.prototype.slice.call(startmenu.querySelectorAll(".sm-item"));
+    var i = items.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+  });
+  document.getElementById("sm-shutdown").addEventListener("click", function () {
+    closeStart();
+    shutdown.hidden = false;
+  });
+  function revive() { shutdown.hidden = true; }
+  shutdown.addEventListener("click", revive);
+  document.addEventListener("keydown", function (e) {
+    if (!shutdown.hidden) { revive(); return; }
+    if (e.key === "Escape") closeStart();
+  });
+
+  /* ---------- clock ---------- */
+  var clock = document.getElementById("clock");
+  function tick() {
+    var d = new Date();
+    clock.textContent = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    clock.title = d.toLocaleDateString([], { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  /* ---------- boot ---------- */
+  openWindow("welcome", document.querySelector('.icon[data-win="welcome"]'));
+})();
+</script>
+</body>
+</html>
