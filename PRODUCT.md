@@ -1,5 +1,10 @@
 # ImAno177 Portfolio
 
-The shipped product is a static, accessible portfolio. Essential content remains DOM-first: About, Projects, CV/Profile, Contact, external links, and GitHub. A Three.js "quiet study" certificate gallery is the visual layer; if it or WebGL fails, the fallback illustration and all portfolio content remain available.
+The shipped product is a static portfolio presented as a Windows 95-style
+desktop ("retro-os"). Visitors open draggable windows from desktop icons, the
+Start menu, or window taskbar buttons to reach About, Projects, README, Mail,
+and a certificate photo viewer with Prev/Next navigation and verification
+links.
 
-Primary stack: Astro, TypeScript, Tailwind CSS, Three.js, GitHub Actions, GitHub Pages.
+Primary stack: Astro, TypeScript, GitHub Actions, GitHub Pages. The page is a
+single self-contained Astro route with inline CSS/JS and no runtime APIs.

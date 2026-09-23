@@ -1,5 +1,4 @@
 import { defineConfig } from "astro/config";
-import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   site: "https://imano177.github.io",
@@ -8,8 +7,5 @@ export default defineConfig({
   devToolbar: { enabled: false },
   build: {
     format: "directory"
-  },
-  vite: {
-    plugins: [tailwindcss()]
   }
 });

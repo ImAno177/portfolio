@@ -7,20 +7,13 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "check": "astro check",
-    "test:browser": "node scripts/check-meadow.mjs"
+    "check": "astro check"
   },
   "dependencies": {
-    "@tailwindcss/vite": "4.3.3",
-    "astro": "7.3.1",
-    "tailwindcss": "4.3.3",
-    "three": "0.180.0"
+    "astro": "7.3.1"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
-    "@types/node": "26.5.0",
-    "@types/three": "0.180.0",
-    "sharp": "0.35.4",
     "typescript": "6.0.3"
   }
 }
