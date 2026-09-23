@@ -89,9 +89,10 @@
     overflow-wrap: break-word;
     text-shadow: 1px 1px 0 rgba(0,0,0,.85);
   }
-  .icon.selected .lbl { background: #000080; text-shadow: none; }
+  .icon.selected .lbl { background: #000080; text-shadow: none; outline: 1px dotted #fff; outline-offset: -1px; }
   .icon:focus-visible { outline: none; }
   .icon:focus-visible .lbl { outline: 1px dotted #fff; outline-offset: 1px; background: #000080; text-shadow: none; }
+  .icon.dragging { z-index: 2000; }
 
   /* ---------- windows ---------- */
   .win {
@@ -146,6 +147,7 @@
     box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
                 inset -2px -2px #808080, inset 2px 2px #dfdfdf;
   }
+  .tb-btn svg { display: block; }
   .tb-btn:active {
     box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
                 inset -2px -2px #dfdfdf, inset 2px 2px #808080;
@@ -156,6 +158,7 @@
     padding: 2px 0;
   }
   .menubar span { padding: 2px 7px; }
+  .menubar span:hover { box-shadow: inset 1px 1px #fff, inset -1px -1px #808080; }
   .menubar span:first-letter { text-decoration: underline; }
   .win-body {
     flex: 1;
@@ -235,6 +238,7 @@
     box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a,
                 inset -2px -2px #dfdfdf, inset 2px 2px #808080;
   }
+  .cert-tile:hover .ct-name { color: #000080; }
   .cert-tile:focus-visible { outline: 1px dotted #000; outline-offset: -4px; }
   .cert-tile img {
     width: 100%;
@@ -379,6 +383,17 @@
     background-size: 2px 2px;
     background-position: 0 0, 1px 1px;
   }
+  #tray {
+    flex: none;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 6px;
+    margin-right: 2px;
+    box-shadow: inset 1px 1px #808080, inset -1px -1px #fff;
+  }
+  #tray .ico { width: 14px; height: 14px; display: block; }
   #clock {
     flex: none;
     height: 24px;
@@ -451,6 +466,111 @@
   }
   #shutdown[hidden] { display: none; }
   #shutdown small { display: block; margin-top: 18px; color: #7a4015; font-size: 12px; }
+
+  /* ---------- win95 scrollbars ---------- */
+  .win * { scrollbar-color: #c0c0c0 #dfdfdf; scrollbar-width: auto; }
+  .win ::-webkit-scrollbar { width: 16px; height: 16px; }
+  .win ::-webkit-scrollbar-track {
+    background: repeating-conic-gradient(#dfdfdf 0% 25%, #fff 0% 50%) 0 0 / 2px 2px;
+  }
+  .win ::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+                inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  }
+  .win ::-webkit-scrollbar-button {
+    width: 16px;
+    height: 16px;
+    background-color: #c0c0c0;
+    background-repeat: no-repeat;
+    background-position: center;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff,
+                inset -2px -2px #808080, inset 2px 2px #dfdfdf;
+  }
+  .win ::-webkit-scrollbar-button:vertical:decrement {
+    background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M4 2.5 7 6.5H1z' fill='black'/%3E%3C/svg%3E");
+  }
+  .win ::-webkit-scrollbar-button:vertical:increment {
+    background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M4 5.5 1 1.5h6z' fill='black'/%3E%3C/svg%3E");
+  }
+  .win ::-webkit-scrollbar-button:horizontal:decrement {
+    background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M2.5 4 6.5 1v6z' fill='black'/%3E%3C/svg%3E");
+  }
+  .win ::-webkit-scrollbar-button:horizontal:increment {
+    background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath d='M5.5 4 1.5 1v6z' fill='black'/%3E%3C/svg%3E");
+  }
+  .win ::-webkit-scrollbar-corner { background: #c0c0c0; }
+
+  /* ---------- marquee selection ---------- */
+  .marquee {
+    position: absolute;
+    border: 1px dotted #000;
+    background: rgba(255,255,255,.18);
+    z-index: 3000;
+    pointer-events: none;
+  }
+
+  /* ---------- ghost outline while moving a window ---------- */
+  .drag-ghost {
+    position: fixed;
+    border: 2px solid #fff;
+    mix-blend-mode: difference;
+    z-index: 4000;
+    pointer-events: none;
+  }
+
+  /* ---------- resize grip ---------- */
+  .resize-grip {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    width: 14px;
+    height: 14px;
+    cursor: nwse-resize;
+    z-index: 5;
+    touch-action: none;
+    background:
+      linear-gradient(135deg, transparent 0 9px, #808080 9px 10px, #fff 10px 11px, transparent 11px),
+      linear-gradient(135deg, transparent 0 5px, #808080 5px 6px, #fff 6px 7px, transparent 7px),
+      linear-gradient(135deg, transparent 0 1px, #808080 1px 2px, #fff 2px 3px, transparent 3px);
+  }
+  .win.max .resize-grip { display: none; }
+
+  /* ---------- desktop context menu ---------- */
+  .ctxmenu {
+    position: fixed;
+    z-index: 6500;
+    background: #c0c0c0;
+    padding: 2px;
+    min-width: 148px;
+    box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf,
+                inset -2px -2px #808080, inset 2px 2px #fff;
+  }
+  .ctxmenu[hidden] { display: none; }
+  .ctxmenu .sm-item { padding: 4px 18px 4px 10px; width: 100%; }
+  #desktop.refresh { filter: brightness(1.07); }
+  #icons.abs .icon { position: absolute; margin: 0; }
+
+  /* ---------- display properties dialog ---------- */
+  .dtabs { display: flex; margin-bottom: -2px; position: relative; z-index: 1; }
+  .dtab {
+    padding: 4px 12px;
+    background: #c0c0c0;
+    border: 0;
+    box-shadow: inset 1px 1px #fff, inset -1px -1px #808080;
+  }
+  .dtab.on { padding-bottom: 6px; box-shadow: inset 1px 1px #fff, inset -1px 0 #808080; font-weight: 700; }
+  .dpanel { padding: 10px; }
+  .dprev {
+    width: 220px;
+    margin: 0 auto 10px;
+    padding: 3px;
+    background: #fff;
+  }
+  .dprev img { display: block; width: 100%; }
+  .dmeta { margin: 8px 0; color: #404040; }
+  .dmeta b { color: #000; }
+  .dactions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 
   /* ---------- small screens ---------- */
   @media (max-width: 600px) {
@@ -668,7 +788,7 @@
       </div>
       <hr class="sep">
       <div class="sunken" style="padding: 8px; min-height: 60px;">
-        <p style="margin: 0;">Hi Chi Bach,</p>
+        <p style="margin: 0;">Hi Chi,</p>
         <p style="margin: 6px 0 0;">&ldquo;A quiet study &mdash; a room for things learned.&rdquo;</p>
       </div>
       <div class="mail-actions">
@@ -678,6 +798,35 @@
     </div>
     <div class="statusbar">
       <span class="status-cell">Ready to send</span>
+    </div>
+  </section>
+
+  <!-- ============ DISPLAY PROPERTIES ============ -->
+  <section class="win" id="w-display" aria-labelledby="t-display" hidden
+           style="left: 220px; top: 90px; width: 300px;">
+    <div class="titlebar">
+      <span class="ico tb-icon" data-ico="photos"></span>
+      <span class="tb-title" id="t-display">Display Properties</span>
+      <div class="tb-btns">
+        <button class="tb-btn" data-act="close" aria-label="Close">&times;</button>
+      </div>
+    </div>
+    <div class="win-body">
+      <div class="dtabs" aria-hidden="true">
+        <span class="dtab on">Background</span>
+        <span class="dtab">Screen Saver</span>
+        <span class="dtab">Settings</span>
+      </div>
+      <div class="dpanel sunken">
+        <div class="dprev"><img src="ghibli-hill.svg" alt="Current wallpaper preview: hand-drawn Ghibli-style hills"></div>
+        <p class="dmeta">Wallpaper: <b>ghibli-hill.svg</b><br>
+        Display: <b>Stretch to fit</b> &middot; hand-drawn, no external assets</p>
+      </div>
+      <div class="dactions">
+        <button class="btn" data-close><strong>OK</strong></button>
+        <button class="btn" data-close>Cancel</button>
+        <button class="btn" id="d-apply">Apply</button>
+      </div>
     </div>
   </section>
 
@@ -699,12 +848,21 @@
   </div>
 </div>
 
+<!-- ============ CONTEXT MENU ============ -->
+<div id="ctxmenu" class="ctxmenu" hidden role="menu" aria-label="Desktop">
+  <button class="sm-item" role="menuitem" id="ctx-arrange">Arrange Icons</button>
+  <button class="sm-item" role="menuitem" id="ctx-refresh">Refresh</button>
+  <div class="sm-sep" aria-hidden="true"></div>
+  <button class="sm-item" role="menuitem" id="ctx-props">Properties</button>
+</div>
+
 <!-- ============ TASKBAR ============ -->
 <footer id="taskbar">
   <button id="startbtn" class="btn" aria-haspopup="menu" aria-expanded="false">
     <span class="ico" data-ico="flag"></span>Start
   </button>
   <div id="taskbtns" role="group" aria-label="Open windows"></div>
+  <div id="tray" aria-hidden="true"><span class="ico" data-ico="speaker"></span><span class="ico" data-ico="taskmon"></span></div>
   <div id="clock" title="">--:--</div>
 </footer>
 
@@ -729,6 +887,8 @@
     page: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><path d="M8 2 h11 l5 5 v23 h-16 z" fill="#fff" stroke="#404040"/><path d="M19 2 v5 h5" fill="#dfdfdf" stroke="#404040" stroke-width="1"/><rect x="11" y="11" width="10" height="1" fill="#808080"/><rect x="11" y="14" width="10" height="1" fill="#808080"/><rect x="11" y="17" width="10" height="1" fill="#808080"/><rect x="11" y="20" width="7" height="1" fill="#808080"/></svg>',
     mail: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><rect x="3" y="7" width="26" height="18" fill="#fff" stroke="#404040"/><path d="M3 7 l13 9 13-9" fill="none" stroke="#808080" stroke-width="1"/><path d="M3 25 l9-7 M29 25 l-9-7" stroke="#dfdfdf" stroke-width="1"/></svg>',
     power: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><circle cx="16" cy="17" r="10" fill="none" stroke="#404040" stroke-width="2"/><rect x="15" y="4" width="2" height="12" fill="#404040"/><rect x="13" y="4" width="6" height="2" fill="#404040"/></svg>',
+    speaker: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges" width="100%" height="100%"><path d="M2 6 h3 l4 -4 v12 l-4 -4 h-3 z" fill="#404040"/><path d="M10 5 q2 3 0 6 M12 3 q3 5 0 10" stroke="#404040" fill="none"/></svg>',
+    taskmon: '<svg viewBox="0 0 16 16" shape-rendering="crispEdges" width="100%" height="100%"><rect x="1" y="2" width="14" height="11" fill="#dfdfdf" stroke="#404040"/><rect x="3" y="4" width="10" height="7" fill="#008080"/><rect x="4" y="5" width="3" height="1" fill="#fff"/><rect x="4" y="7" width="6" height="1" fill="#ffd867"/><rect x="6" y="14" width="4" height="1" fill="#404040"/></svg>',
     droid: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><rect x="7" y="10" width="18" height="14" rx="2" fill="#3ddc84" stroke="#1e7a4a"/><rect x="9" y="6" width="14" height="6" rx="3" fill="#3ddc84" stroke="#1e7a4a"/><rect x="11" y="8" width="2" height="2" fill="#fff"/><rect x="19" y="8" width="2" height="2" fill="#fff"/><path d="M10 4 l3 3 M22 4 l-3 3" stroke="#1e7a4a" stroke-width="1"/><rect x="4" y="12" width="3" height="9" fill="#3ddc84" stroke="#1e7a4a"/><rect x="25" y="12" width="3" height="9" fill="#3ddc84" stroke="#1e7a4a"/></svg>',
     shield: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><path d="M16 2 l12 4 v9 c0 8 -5 13 -12 15 c-7 -2 -12 -7 -12 -15 v-9 z" fill="#2d7cd6" stroke="#0a3a70"/><path d="M16 5 l9 3 v7 c0 6 -4 10 -9 12 z" fill="#7db8ec"/><path d="M10 15 l4 4 8 -8" fill="none" stroke="#fff" stroke-width="2"/></svg>',
     spider: '<svg viewBox="0 0 32 32" shape-rendering="crispEdges" width="100%" height="100%"><rect x="12" y="12" width="8" height="8" fill="#404040"/><rect x="14" y="6" width="4" height="6" fill="#404040"/><path d="M12 12 l-8 -6 M12 15 l-10 -1 M12 18 l-10 2 M13 20 l-7 7 M20 12 l8 -6 M20 15 l10 -1 M20 18 l10 2 M19 20 l7 7" stroke="#404040" stroke-width="1"/><rect x="14" y="14" width="2" height="2" fill="#e0362c"/></svg>',
@@ -743,7 +903,7 @@
   });
 
   /* ---------- window manager ---------- */
-  var IDS = ["welcome", "projects", "certificates", "about", "contact"];
+  var IDS = ["welcome", "projects", "certificates", "about", "contact", "display"];
   var taskbtns = document.getElementById("taskbtns");
   var zTop = 10;
   var activeId = null;
@@ -807,6 +967,7 @@
     }
     if (opener) openWins[id].opener = opener;
     focusWindow(id);
+    el.focus({ preventScroll: true });
   }
 
   function closeWindow(id) {
@@ -855,18 +1016,37 @@
       };
       el.classList.add("max");
     }
+    var mb = el.querySelector('.tb-btn[data-act="max"]');
+    if (mb) {
+      var isMax = el.classList.contains("max");
+      mb.innerHTML = TB_GLYPH[isMax ? "restore" : "max"];
+      mb.setAttribute("aria-label", isMax ? "Restore" : "Maximize");
+    }
     focusWindow(id);
   }
+
+  /* pixel-aligned titlebar glyphs (text chars sit on inconsistent baselines) */
+  var TB_GLYPH = {
+    min:   '<svg viewBox="0 0 10 10" width="10" height="10" shape-rendering="crispEdges" aria-hidden="true"><rect x="1" y="7" width="7" height="2" fill="#000"/></svg>',
+    max:   '<svg viewBox="0 0 10 10" width="10" height="10" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="1" width="7" height="7" fill="#000"/><rect x="4" y="4" width="3" height="3" fill="#c0c0c0"/></svg>',
+    restore: '<svg viewBox="0 0 10 10" width="10" height="10" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="1" width="6" height="6" fill="#000"/><rect x="5" y="3" width="2" height="2" fill="#c0c0c0"/><rect x="1" y="4" width="5" height="5" fill="#000"/><rect x="3" y="6" width="1" height="1" fill="#c0c0c0"/></svg>',
+    close: '<svg viewBox="0 0 10 10" width="10" height="10" shape-rendering="crispEdges" aria-hidden="true"><path d="M2 1h2l2 2 2-2h2v2l-2 2 2 2v2h-2l-2-2-2 2H2v-2l2-2-2-2z" fill="#000"/></svg>'
+  };
 
   /* wire up each window: drag + buttons + focus */
   function wireWindow(id) {
     var el = winEl(id);
     var bar = el.querySelector(".titlebar");
 
+    el.querySelectorAll(".tb-btn").forEach(function (b) {
+      b.innerHTML = TB_GLYPH[b.dataset.act] || b.innerHTML;
+    });
+
     el.addEventListener("pointerdown", function () {
       if (openWins[id]) focusWindow(id);
     });
 
+    /* win95-style move: show a ghost outline, commit position on release */
     bar.addEventListener("pointerdown", function (e) {
       if (e.button !== 0) return;
       if (e.target.closest(".tb-btn")) return;
@@ -875,23 +1055,69 @@
       e.preventDefault();
       var r = el.getBoundingClientRect();
       var dx = e.clientX - r.left, dy = e.clientY - r.top;
-      function move(ev) {
+      var ghost = document.createElement("div");
+      ghost.className = "drag-ghost";
+      var moved = false;
+      function place(ev) {
         var x = ev.clientX - dx, y = ev.clientY - dy;
         x = Math.max(-r.width + 80, Math.min(x, window.innerWidth - 80));
         y = Math.max(0, Math.min(y, window.innerHeight - 60));
-        el.style.left = x + "px";
-        el.style.top = y + "px";
+        if (!moved) {
+          ghost.style.width = r.width + "px";
+          ghost.style.height = r.height + "px";
+          document.body.appendChild(ghost);
+          moved = true;
+        }
+        ghost.style.left = x + "px";
+        ghost.style.top = y + "px";
       }
       function up() {
-        bar.removeEventListener("pointermove", move);
+        bar.removeEventListener("pointermove", place);
         bar.removeEventListener("pointerup", up);
         bar.removeEventListener("pointercancel", up);
+        if (moved) {
+          el.style.left = ghost.style.left;
+          el.style.top = ghost.style.top;
+          ghost.remove();
+        }
       }
-      bar.addEventListener("pointermove", move);
+      bar.addEventListener("pointermove", place);
       bar.addEventListener("pointerup", up);
       bar.addEventListener("pointercancel", up);
       bar.setPointerCapture && bar.setPointerCapture(e.pointerId);
     });
+
+    bar.addEventListener("dblclick", function (e) {
+      if (!e.target.closest(".tb-btn") && el.querySelector('.tb-btn[data-act="max"]')) toggleMax(id);
+    });
+
+    /* bottom-right resize grip, only on resizable (maximizable) windows */
+    if (el.querySelector('.tb-btn[data-act="max"]')) {
+      var grip = document.createElement("div");
+      grip.className = "resize-grip";
+      grip.setAttribute("aria-hidden", "true");
+      el.appendChild(grip);
+      grip.addEventListener("pointerdown", function (e) {
+        if (e.button !== 0 || el.classList.contains("max")) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var r = el.getBoundingClientRect();
+        var sw = r.width, sh = r.height, sx = e.clientX, sy = e.clientY;
+        function move(ev) {
+          el.style.width = Math.max(220, Math.min(sw + ev.clientX - sx, window.innerWidth)) + "px";
+          el.style.height = Math.max(140, Math.min(sh + ev.clientY - sy, window.innerHeight - 32)) + "px";
+        }
+        function up() {
+          grip.removeEventListener("pointermove", move);
+          grip.removeEventListener("pointerup", up);
+          grip.removeEventListener("pointercancel", up);
+        }
+        grip.addEventListener("pointermove", move);
+        grip.addEventListener("pointerup", up);
+        grip.addEventListener("pointercancel", up);
+        grip.setPointerCapture && grip.setPointerCapture(e.pointerId);
+      });
+    }
 
     el.querySelectorAll("[data-act]").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -1126,15 +1352,78 @@
     if (c) closeWindow(c.closest(".win").id.slice(2));
   });
 
-  /* ---------- desktop icons ---------- */
+  /* ---------- desktop icons: select / drag / marquee ---------- */
   var icons = Array.prototype.slice.call(document.querySelectorAll(".icon"));
-  function selectIcon(ic) {
-    icons.forEach(function (i) { i.classList.toggle("selected", i === ic); });
+  var iconsBox = document.getElementById("icons");
+  var desktop = document.getElementById("desktop");
+  var sel = new Set();
+
+  function setSel(list) {
+    sel = new Set(list);
+    icons.forEach(function (i) { i.classList.toggle("selected", sel.has(i)); });
   }
+
+  /* freeze the flex layout into absolute coords so icons can be dragged freely */
+  function parkIcons() {
+    icons.forEach(function (ic) {
+      ic.style.left = ic.offsetLeft + "px";
+      ic.style.top = ic.offsetTop + "px";
+    });
+    iconsBox.classList.add("abs");
+  }
+  function arrangeIcons() {
+    iconsBox.classList.remove("abs");
+    icons.forEach(function (ic) { ic.style.left = ""; ic.style.top = ""; });
+    parkIcons(); /* offsetLeft forces a sync reflow, positions are fresh */
+  }
+  parkIcons();
+
   icons.forEach(function (ic, idx) {
+    ic.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0) return;
+      /* remembered for click: was this the sole selection before the press? */
+      ic.dataset.wassel = (sel.has(ic) && sel.size === 1) ? "1" : "";
+      if (!sel.has(ic)) setSel([ic]);
+      var startX = e.clientX, startY = e.clientY;
+      var dragging = false;
+      var origins = Array.from(sel).map(function (i) {
+        return { el: i, x: i.offsetLeft, y: i.offsetTop };
+      });
+      function move(ev) {
+        var dx = ev.clientX - startX, dy = ev.clientY - startY;
+        if (!dragging && Math.abs(dx) + Math.abs(dy) > 4) {
+          dragging = true;
+          origins.forEach(function (o) { o.el.classList.add("dragging"); });
+        }
+        if (dragging) {
+          var deskW = desktop.clientWidth, deskH = desktop.clientHeight;
+          origins.forEach(function (o) {
+            o.el.style.left = Math.max(0, Math.min(o.x + dx, deskW - o.el.offsetWidth)) + "px";
+            o.el.style.top = Math.max(0, Math.min(o.y + dy, deskH - o.el.offsetHeight)) + "px";
+          });
+        }
+      }
+      function up() {
+        document.removeEventListener("pointermove", move);
+        document.removeEventListener("pointerup", up);
+        if (dragging) {
+          origins.forEach(function (o) { o.el.classList.remove("dragging"); });
+          ic.dataset.dragged = "1";
+          setTimeout(function () { delete ic.dataset.dragged; }, 0);
+        }
+      }
+      document.addEventListener("pointermove", move);
+      document.addEventListener("pointerup", up);
+    });
     ic.addEventListener("click", function (e) {
-      var was = ic.classList.contains("selected");
-      selectIcon(ic);
+      if (ic.dataset.dragged) return;
+      var was = ic.dataset.wassel === "1";
+      if (e.ctrlKey || e.metaKey) {  /* ctrl+click toggles membership */
+        sel.has(ic) ? sel.delete(ic) : sel.add(ic);
+        setSel(Array.from(sel));
+        return;
+      }
+      setSel([ic]);
       /* keyboard click (detail 0), double click, or tap on already-selected icon */
       if (e.detail === 0 || e.detail >= 2 || was) openWindow(ic.getAttribute("data-win"), ic);
     });
@@ -1144,11 +1433,78 @@
       else if (e.key === "ArrowUp" || e.key === "ArrowLeft") n = icons[(idx - 1 + icons.length) % icons.length];
       else if (e.key === "Home") n = icons[0];
       else if (e.key === "End") n = icons[icons.length - 1];
-      if (n) { e.preventDefault(); n.focus(); selectIcon(n); }
+      if (n) { e.preventDefault(); n.focus(); setSel([n]); }
     });
   });
-  document.getElementById("desktop").addEventListener("pointerdown", function (e) {
-    if (!e.target.closest(".icon") && !e.target.closest(".win")) selectIcon(null);
+
+  /* drag on empty desktop draws a marquee and selects intersecting icons */
+  desktop.addEventListener("pointerdown", function (e) {
+    if (e.button !== 0) return;
+    if (e.target.closest(".icon") || e.target.closest(".win")) return;
+    var ox = e.clientX, oy = e.clientY;
+    var dr = desktop.getBoundingClientRect();
+    var m = document.createElement("div");
+    m.className = "marquee";
+    var started = false;
+    function move(ev) {
+      var x1 = Math.min(ox, ev.clientX), y1 = Math.min(oy, ev.clientY);
+      var x2 = Math.max(ox, ev.clientX), y2 = Math.max(oy, ev.clientY);
+      if (!started && x2 - x1 + y2 - y1 > 4) { desktop.appendChild(m); started = true; }
+      if (!started) return;
+      m.style.left = x1 - dr.left + "px";
+      m.style.top = y1 - dr.top + "px";
+      m.style.width = x2 - x1 + "px";
+      m.style.height = y2 - y1 + "px";
+      setSel(icons.filter(function (ic) {
+        var r = ic.getBoundingClientRect();
+        return r.right > x1 && r.left < x2 && r.bottom > y1 && r.top < y2;
+      }));
+    }
+    function up() {
+      document.removeEventListener("pointermove", move);
+      document.removeEventListener("pointerup", up);
+      m.remove();
+      if (!started) setSel([]); /* plain click on empty space clears selection */
+    }
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerup", up);
+  });
+
+  /* ---------- desktop context menu ---------- */
+  var ctx = document.getElementById("ctxmenu");
+  function closeCtx() { ctx.hidden = true; }
+  desktop.addEventListener("contextmenu", function (e) {
+    if (e.target.closest(".win")) return;
+    e.preventDefault();
+    ctx.style.left = Math.min(e.clientX, window.innerWidth - 156) + "px";
+    ctx.style.top = Math.min(e.clientY, window.innerHeight - 130) + "px";
+    ctx.hidden = false;
+    var f = ctx.querySelector(".sm-item");
+    if (f) f.focus();
+  });
+  document.addEventListener("pointerdown", function (e) {
+    if (!ctx.hidden && !e.target.closest("#ctxmenu")) closeCtx();
+  });
+  document.getElementById("ctx-arrange").addEventListener("click", function () {
+    arrangeIcons(); closeCtx();
+  });
+  document.getElementById("ctx-refresh").addEventListener("click", function () {
+    closeCtx();
+    desktop.classList.add("refresh");
+    setTimeout(function () { desktop.classList.remove("refresh"); }, 140);
+  });
+  document.getElementById("ctx-props").addEventListener("click", function () {
+    openWindow("display", ctx); closeCtx();
+  });
+  ctx.addEventListener("keydown", function (e) {
+    var items = Array.prototype.slice.call(ctx.querySelectorAll(".sm-item"));
+    var i = items.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+  });
+  document.getElementById("d-apply").addEventListener("click", function () {
+    desktop.classList.add("refresh");
+    setTimeout(function () { desktop.classList.remove("refresh"); }, 140);
   });
 
   /* ---------- start menu ---------- */
@@ -1190,7 +1546,16 @@
   shutdown.addEventListener("click", revive);
   document.addEventListener("keydown", function (e) {
     if (!shutdown.hidden) { revive(); return; }
-    if (e.key === "Escape") closeStart();
+    if (e.ctrlKey && e.key === "Escape") { e.preventDefault(); startbtn.click(); return; }
+    if (e.key === "Escape") { closeStart(); closeCtx(); return; }
+    if (e.altKey && e.key === "Tab") {
+      e.preventDefault();
+      var ids = Object.keys(openWins).filter(function (id) {
+        return !openWins[id].el.classList.contains("min");
+      });
+      if (!ids.length) return;
+      focusWindow(ids[(ids.indexOf(activeId) + 1) % ids.length]);
+    }
   });
 
   /* ---------- clock ---------- */
